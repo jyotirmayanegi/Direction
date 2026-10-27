@@ -1,0 +1,153 @@
+{
+  "done": {},
+  "doneAt": {},
+  "lab": {
+    "t1": {
+      "done": true,
+      "hints": 0,
+      "stars": 3,
+      "tries": 0,
+      "worst": 0
+    }
+  },
+  "labos": {
+    "apps": {},
+    "drill": {
+      "ans": {},
+      "date": "2026-10-26",
+      "done": false,
+      "qs": [
+        [
+          "t-grcauto",
+          1
+        ],
+        [
+          "t-sentinel",
+          2
+        ],
+        [
+          "c-basics",
+          2
+        ]
+      ],
+      "streak": 0
+    },
+    "mail": {
+      "best": 0,
+      "rounds": 0
+    },
+    "ops": {},
+    "quest": {
+      "flag": false,
+      "level": 0
+    },
+    "stats": {
+      "cmds": 0
+    },
+    "xp": 0
+  },
+  "log": {},
+  "projects": {
+    "p-ai": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    },
+    "p-audit": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    },
+    "p-dashboard": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    },
+    "p-dpdp-gap": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    },
+    "p-dsar": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    },
+    "p-ir": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    },
+    "p-iso-soa": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    },
+    "p-policy": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    },
+    "p-risk": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    },
+    "p-ropa-dpia": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    },
+    "p-vendor": {
+      "attempts": 0,
+      "draft": "",
+      "history": [],
+      "passed": false,
+      "self": {},
+      "steps": {}
+    }
+  },
+  "quiz": {
+    "grc": {
+      "0": 1,
+      "1": 2,
+      "2": 1
+    }
+  },
+  "reviewed": {},
+  "tlog": {
+    "2026-10-27": {
+      "grc": 8
+    }
+  }
+}

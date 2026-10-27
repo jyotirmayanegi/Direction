@@ -1,0 +1,12 @@
+const {chromium}=require('playwright');const fs=require('fs');
+const SP='/tmp/claude-0/-home-claude/bbc92bc2-2460-5c51-8cb3-a5572324ac99/scratchpad', OUT=SP+'/shots';
+const src=fs.readFileSync(__dirname+'/shot4.js','utf8'); const i=src.indexOf('const MOCK=`')+'const MOCK=`'.length, j=src.indexOf('`;',i);
+const MOCK=eval('`'+src.slice(i,j)+'`');
+(async()=>{ const b=await chromium.launch(); const ctx=await b.newContext({viewport:{width:390,height:844},deviceScaleFactor:2}); await ctx.addInitScript(MOCK); const p=await ctx.newPage();
+ await p.goto('file:///home/claude/grc-hub.html'); await p.waitForTimeout(1500);
+ await p.screenshot({path:OUT+'/dock-home.png'});
+ await p.evaluate(()=>scrollTo(0,1e6)); await p.waitForTimeout(200); await p.screenshot({path:OUT+'/dock-bottom.png'});
+ await p.click('#moreBtn'); await p.waitForTimeout(300); await p.screenshot({path:OUT+'/dock-menu.png'});
+ await p.evaluate(()=>{const s=document.querySelector('.sheet'); s.scrollTop=1e6}); await p.waitForTimeout(200); await p.screenshot({path:OUT+'/dock-menu-end.png'});
+ console.log(await p.evaluate(()=>{const r=e=>{const x=document.querySelector(e);if(!x)return null;const c=x.getBoundingClientRect();return [Math.round(c.top),Math.round(c.bottom),getComputedStyle(x).zIndex,getComputedStyle(x).display]}; return {sheet:r('.sheet'),tabs:r('#tabs'),tabbar:r('.tabbar'),menubtn:r('#menuBtn'),avbtn:r('.avbtn'),hdr:r('#hdr')}}));
+ await b.close();})();

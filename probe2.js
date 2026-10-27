@@ -1,0 +1,11 @@
+const {chromium}=require('playwright');
+const OUT='/tmp/claude-0/-home-claude/bbc92bc2-2460-5c51-8cb3-a5572324ac99/scratchpad/shots';
+(async()=>{ const b=await chromium.launch(); const logs=[];
+ const ctx=await b.newContext({viewport:{width:390,height:844},colorScheme:'dark'}); await ctx.addInitScript('window.claude={use:async()=>null}');
+ const p=await ctx.newPage(); p.on('pageerror',e=>logs.push(e.message));
+ await p.goto('file:///home/claude/grc-hub.html'); await p.waitForTimeout(400);
+ await p.click('#menuBtn'); await p.waitForTimeout(200);
+ await p.click('.sheet .focusbtn'); await p.waitForTimeout(300); await p.screenshot({path:`${OUT}/m-menu-rp.png`});
+ const top = await p.evaluate(()=>{ const r=document.querySelector('#rolePicker .rpitem'); if(!r) return 'no picker'; const bb=r.getBoundingClientRect(); const el=document.elementFromPoint(bb.x+20,bb.y+10); return el.className+' | '+(el.closest('#rolePicker')?'picker on top':'COVERED'); });
+ console.log(top);
+ await ctx.close(); console.log(logs); await b.close(); })();

@@ -1,0 +1,11 @@
+const {chromium}=require('playwright');const fs=require('fs');const src=fs.readFileSync(__dirname+'/shot4.js','utf8');const i=src.indexOf('const MOCK=`')+12,j=src.indexOf('`;',i);const MOCK=eval('`'+src.slice(i,j)+'`');
+const REAL=fs.readFileSync('/tmp/claude-0/-home-claude/bbc92bc2-2460-5c51-8cb3-a5572324ac99/scratchpad/db/data/users/me/progress.json','utf8');
+(async()=>{const b=await chromium.launch();for (const [w,n] of [[1280,'d'],[390,'m']]){const c=await b.newContext({viewport:{width:w,height:860}});await c.addInitScript(MOCK);await c.addInitScript(`__mock.store.set('data/users/u1/progress',${REAL});`);
+ const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto('file:///home/claude/grc-hub.html#lab');await p.waitForTimeout(2500);
+ await p.waitForTimeout(200);
+ await p.click('#losPanel [data-losopen="term"]');await p.waitForTimeout(400);
+ const t=async s=>{await p.fill('.win.focus .tcmd',s);await p.press('.win.focus .tcmd','Enter');await p.waitForTimeout(250);};
+ await t('ssh quest0@quest'); await t('quest0'); await t('cat readme');
+ const out=await p.evaluate(()=>document.querySelector('.win.focus .tout2').innerText.slice(-500));
+ await p.screenshot({path:'/tmp/claude-0/-home-claude/bbc92bc2-2460-5c51-8cb3-a5572324ac99/scratchpad/shots/quest-'+n+'.png'});
+ console.log(n,out,errs); await c.close();} await b.close();})();

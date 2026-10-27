@@ -1,0 +1,15 @@
+const {chromium}=require('playwright');
+(async()=>{const b=await chromium.launch(); const out='/tmp/claude-0/-home-claude/bbc92bc2-2460-5c51-8cb3-a5572324ac99/scratchpad/';
+ const html=require('fs').readFileSync('/home/claude/grc-hub.html','utf8');
+ const page=await b.newPage({viewport:{width:1360,height:900}}); const errs=[]; page.on('pageerror',e=>errs.push(e.message));
+ await page.setContent('<!doctype html><html><head><meta name=viewport content="width=device-width,initial-scale=1"></head><body>'+html+'</body></html>');
+ await page.waitForTimeout(300);
+ await page.evaluate(()=>{ MISSIONS.forEach(m=>labState(m.id).done=false); go('lab-so1'); }); await page.waitForTimeout(150);
+ await page.fill('#kqlIn','SigninLogs\n| where ResultType != "0"\n| summarize count() by UserPrincipalName\n| sort by count_ desc'); await page.keyboard.press('Control+Enter'); await page.click('[data-lkqlrun]');
+ await page.waitForTimeout(150); await page.screenshot({path:out+'kql.png'});
+ await page.evaluate(()=>{ go('lab'); document.querySelector('.zgroup:nth-of-type(2)')?.scrollIntoView(); }); await page.waitForTimeout(150);
+ await page.evaluate(()=>{ const g=document.querySelectorAll('.zgroup'); g[1].scrollIntoView(); }); await page.screenshot({path:out+'toolzones.png'});
+ await page.evaluate(()=>{ labState('aw1').done=true; go('lab-aw2'); }); await page.waitForTimeout(150); await page.screenshot({path:out+'aw2.png'});
+ await page.evaluate(()=>go('t-azure')); await page.waitForTimeout(150); await page.screenshot({path:out+'azure.png'});
+ await page.setViewportSize({width:390,height:844}); await page.evaluate(()=>go('lab-so1')); await page.waitForTimeout(150); await page.evaluate(()=>document.getElementById('kqlIn').scrollIntoView()); await page.screenshot({path:out+'kql-m.png'});
+ console.log(errs); await b.close();})();
