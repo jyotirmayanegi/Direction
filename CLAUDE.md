@@ -3,3 +3,4 @@
 - Before publishing also run `node sweep.js`, `node paytest.js`, `node litest.js`, `node acttest.js`, `node drilltest.js`.
 - LabOS: windows must never sit under the Ops board (board z-index 100000; desktop windows use the space beside it; on phones the board steps aside when a window opens). Phone taskbar wraps so every open window stays switchable.
 - Data read from the platform database is frozen. All reads go through dbWrap()/thaw() in app.js (cap.db is wrapped). Never call claude.use("db") elsewhere or keep the raw db.
+- Every published update is also saved to GitHub (jyotirmayanegi/Direction) with `python3 release.py "plain summary" "artifact version"`. Updates are named after the next periodic-table element (H, He, Li…) and tagged `NNN-Sym-Name`. To go back: `python3 release.py --restore He`, then release again and republish.
