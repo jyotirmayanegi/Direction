@@ -1,19 +1,26 @@
 """Save one app update to GitHub, named after the next element of the periodic table.
 Usage: python3 release.py "What changed, in plain words" [artifact version]
-Builds (with the automatic checks), copies the build to dist/, commits, tags (e.g. 02-He-Helium) and pushes.
+Builds (with the automatic checks), copies the build to dist/, commits as one update named e.g. "He (Helium) · ..." and pushes.
 Go back to any update:  python3 release.py --restore He   (puts that update's files back as a NEW update)"""
 import json, os, subprocess, sys, datetime, shutil
 D = os.path.dirname(os.path.abspath(__file__)); os.chdir(D)
 EL = json.load(open('elements.json'))
 def sh(*a, check=True): return subprocess.run(a, check=check, capture_output=True, text=True).stdout.strip()
-def tags(): return sorted([t for t in sh('git', 'tag', '-l').split('\n') if t[:2].isdigit()])
+def updates():
+    """[(commit, symbol, name)] oldest first: every commit whose title starts 'Sym (Name) ·'."""
+    out = []
+    for line in sh('git', 'log', '--reverse', '--format=%H %s').split('\n'):
+        if ' (' in line and ') \u00b7 ' in line:
+            h, rest = line.split(' ', 1); sym = rest.split(' (')[0]; name = rest.split(' (')[1].split(')')[0]
+            if (sym + ' ' + name) in EL: out.append((h, sym, name))
+    return out
+def tags(): return [f'{s} ({n})' for _, s, n in updates()]
 def tag_for(sym):
-    for t in tags():
-        if t.split('-')[1].lower() == sym.lower() or t.split('-')[2].lower() == sym.lower(): return t
-    sys.exit(f'No update named {sym}. Updates: ' + ', '.join(tags()))
+    hits = [h for h, s, n in updates() if sym.lower() in (s.lower(), n.lower())]
+    if not hits: sys.exit(f'No update named {sym}. Updates: ' + ', '.join(tags()))
+    return hits[-1]
 def release(summary, art=''):
     n = len(tags()); sym, name = EL[n % len(EL)].split(' '); cycle = n // len(EL)
-    tag = f'{n+1:03d}-{sym}-{name}' + (f'-r{cycle+1}' if cycle else '')
     if subprocess.run([sys.executable, 'build.py']).returncode != 0: sys.exit('Build or checks failed: nothing saved.')
     os.makedirs('dist', exist_ok=True); shutil.copy('/home/claude/grc-hub.html', 'dist/career-count.html')
     day = datetime.date.today().isoformat()
@@ -24,9 +31,8 @@ def release(summary, art=''):
     sh('git', 'add', '-A')
     msg = f'{sym} ({name}) · {summary}\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01M56tP6x8We1gSGS3Pogdoo'
     sh('git', 'commit', '-q', '-m', msg)
-    sh('git', 'tag', '-a', tag, '-m', f'{sym} ({name}) · {summary}')
-    sh('git', 'push', '-q', 'origin', 'main'); sh('git', 'push', '-q', 'origin', tag)
-    print('SAVED', tag)
+    sh('git', 'push', '-q', 'origin', 'main')
+    print('SAVED', f'{sym} ({name})', sh('git', 'rev-parse', '--short', 'HEAD'))
 def restore(sym):
     t = tag_for(sym)
     keep = ['CHANGELOG.md', 'release.py', 'elements.json']
