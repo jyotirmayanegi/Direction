@@ -94,51 +94,6 @@ document.addEventListener("change", e => { if (e.target.id === "vennRole") { ven
 
 /* ---------- learning path (separated by track) ---------- */
 let learnGroup2 = "role", trackF = "all", showNotNeeded = false, learnMode = "must";
-function viewLearn2(){
-  const fr = focusRole(), P = pathOf(fr), q = query.toLowerCase();
-  const inTrack = t => trackF === "all" || t.track === trackF;
-  const needed = t => !fr || !!topicNeed(fr, t.id);
-  const hits = q ? TOPICS.flatMap(t => t.subs.map((s,i) => ({t,s,i}))).filter(x => (x.s.t+" "+x.s.b).toLowerCase().includes(q)).slice(0,14) : [];
-  const card = (t, n) => topicCard(t, n, fr ? topicNeed(fr, t.id) : "");
-  let body = "";
-  if (learnGroup2 === "track") {
-    body = TRACK_ORDER.filter(tr => trackF === "all" || tr === trackF).map(tr => {
-      const I = TRACK_INFO[tr], all = TOPICS.filter(t => t.track === tr), list = fr ? (P ? [...P.core, ...P.support].map(id => TOPIC[id]).filter(t => t && t.track === tr) : all) : all;
-      if (!list.length) return fr ? `<div class="trackskip"><span class="tk" style="--tc:${I.color}">${I.icon}</span><span><b>${esc(I.name)}</b> — not needed for ${esc(roleShort(fr))}. <span class="muted">${all.length} subjects hidden.</span></span></div>` : "";
-      const s = groupStats(list);
-      return `<section class="phase trackbox" style="--tc:${I.color}"><div class="phase-h"><span class="tk">${I.icon}</span><h3>${esc(I.name)}</h3><span class="num">${list.length} subject${list.length>1?"s":""} · ${s.p}% learned · ${esc(I.blurb)}</span></div>
-        <div class="grid3">${list.map((t,i) => card(t, i+1)).join("")}</div></section>`; }).join("");
-  } else if (learnGroup2 === "role" && P) {
-    const core = P.core.map(id => TOPIC[id]).filter(t => t && inTrack(t)), sup = P.support.map(id => TOPIC[id]).filter(t => t && inTrack(t));
-    body = `<section class="phase"><div class="phase-h"><span class="pn">CORE</span><h3>Study these in order</h3><span class="num">${groupStats(core).p}% learned</span></div><div class="grid3">${core.map((t,i)=>card(t,i+1)).join("")}</div></section>
-      <section class="phase"><div class="phase-h"><span class="pn">SUPPORT</span><h3>Learn enough to talk about these</h3><span class="num">${groupStats(sup).p}% learned</span></div><div class="grid3">${sup.map((t,i)=>card(t,core.length+i+1)).join("")}</div></section>`;
-  } else if (learnGroup2 === "intensity") {
-    body = [1,2,3].map(l => { const shown = TOPICS.filter(t => INTENSITY[t.id]===l && inTrack(t) && needed(t)); if (!shown.length) return ""; return `<section class="phase"><div class="phase-h">${lvBadge(l)}<h3>${l===1?"Foundation: no background needed":l===2?"Working knowledge: needs the foundations":"Specialist: sector rules, incidents and enterprise tools"}</h3><span class="num">${groupStats(shown).p}% learned</span></div><div class="grid3">${shown.map(t=>card(t, TOPICS.indexOf(t)+1)).join("")}</div></section>`; }).join("");
-  } else {
-    let n = 0;
-    body = PHASES.map((ph,pi) => { const ts = ph.ids.map(id => TOPIC[id]).filter(Boolean); const start = n; n += ts.length; const shown = ts.filter(t => inTrack(t) && needed(t)); if (!shown.length) return ""; const s = groupStats(shown);
-      return `<section class="phase"><div class="phase-h"><span class="pn">PHASE ${pi+1}</span><h3>${esc(ph.name)}</h3><span class="num">${s.p}% · ${esc(ph.why)}</span></div><div class="grid3">${shown.map(t=>card(t, start+ts.indexOf(t)+1)).join("")}</div></section>`; }).join("");
-  }
-  const notNeeded = fr ? TOPICS.filter(t => !topicNeed(fr, t.id) && inTrack(t)) : [];
-  const modeSeg = `<div class="seg modeseg" role="group" aria-label="View">${[["must","Must know"],["full","Full path"]].map(([v,l])=>`<button aria-pressed="${learnMode===v}" data-lmode="${v}">${l}</button>`).join("")}</div>`;
-  if (learnMode === "must") return `<div class="row between"><div><span class="eyebrow">Learning path</span><h2>Your path for ${esc(roleShort(fr))}</h2></div>${modeSeg}</div>
-  ${roleChipRow()}
-  ${vennCard()}
-  <section class="card mkcard"><div class="row between"><div><span class="eyebrow">Must know</span><h3>Only what to read and which tools to use</h3></div><button class="btn sm ghost" data-go="role-${fr}">Role page</button></div>${mustKnow(fr)}</section>`;
-  return `${modeSeg}<div><span class="eyebrow">Learning path</span><h2>${fr ? "Your path for " + esc(roleShort(fr)) : "Study by track"}</h2></div>
-  ${roleChipRow()}
-  ${vennCard()}
-  ${fr && P ? `<div class="card focuscard"><div class="row between"><div style="min-width:0"><span class="eyebrow">Studying for</span><h3>${esc(ROLE[fr].name)}</h3><p class="muted" style="font-size:.9rem;margin:4px 0 0">${esc(P.why)}</p></div><div class="row">${ring(roleReady(ROLE[fr]),"acc")}<button class="btn sm" data-go="path">Open roadmap</button></div></div>
-    <div class="row"><span class="pill acc">${P.core.length} core</span><span class="pill">${P.support.length} supporting</span><span class="pill">${notNeeded.length} not needed</span></div>
-    <div class="inset"><b style="font-size:.88rem">You can skip:</b> <span style="font-size:.9rem">${esc(P.skip)}</span></div></div>` : `<div class="card"><p style="margin:0">Subjects are split into five separate tracks so cybersecurity, compliance, tools, business and specialist legal subjects never mix. Pick a role above to see only what that role needs.</p></div>`}
-  <div class="card">${legend()}
-    <div class="row between"><div class="row"><div class="seg" role="group" aria-label="Group by">${[["track","By track"],...(P?[["role","Role order"]]:[]),["intensity","By intensity"],["phase","Learning phases"]].map(([v,l])=>`<button aria-pressed="${learnGroup2===v}" data-lgroup2="${v}">${l}</button>`).join("")}</div>
-      <div class="seg" role="group" aria-label="Track">${[["all","All tracks"],...TRACK_ORDER.map(k=>[k,TRACK_INFO[k].short])].map(([v,l])=>`<button aria-pressed="${trackF===v}" data-trackf="${v}">${esc(l)}</button>`).join("")}</div></div>
-    <input type="search" id="q" placeholder="Search, e.g. consent, MFA, KYC" value="${esc(query)}" style="max-width:300px"></div></div>
-  ${hits.length?`<div class="card"><span class="eyebrow">Matching sub-topics</span>${hits.map(x=>`<div class="row between"><button class="link" data-go="${x.t.id}" data-anchor="s-${x.i}">${esc(x.s.t)}</button><span class="row">${lv(x.s.l)}<span class="num">${esc(x.t.title)}</span></span></div>`).join("")}</div>`:""}
-  ${body || `<div class="card"><p class="muted">Nothing in this track for this role. Pick another track or role.</p></div>`}
-  ${notNeeded.length ? `<div class="card"><button class="link" data-shownot="1">${showNotNeeded?"Hide":"Show"} ${notNeeded.length} subject${notNeeded.length>1?"s":""} ${esc(roleShort(fr))} doesn't need</button>${showNotNeeded?`<div class="grid3" style="margin-top:10px">${notNeeded.map(t=>topicCard(t, TOPICS.indexOf(t)+1, "")).join("")}</div>`:""}</div>` : ""}`;
-}
 
 /* ---------- roadmap page ---------- */
 let pathRole = null;

@@ -263,3 +263,21 @@ body.modal-open{overflow:hidden}
 .qprow.cur{font-weight:700}
 .qprow code.pw{user-select:all}
 .qprow .row{gap:6px;flex-wrap:nowrap}
+
+/* ---- role pathways, learn hub, clean home ---- */
+.pwhub{display:grid;gap:14px}
+.pw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:10px}
+.pw-role{border:1px solid rgba(127,127,127,.25);border-radius:14px;padding:14px;display:grid;gap:8px;min-width:0}
+.pw-role.on{border-color:var(--acc,#0A6CDF)}
+.pw-next{display:grid;gap:12px}
+.pw-next h3{margin:2px 0}
+.pw-quick{flex-wrap:wrap;gap:8px}
+.pwstep{border-left:3px solid rgba(127,127,127,.3);padding:4px 0 4px 14px;margin:16px 0}
+.pwstep.done{border-color:#1E8A4C}
+.pwstep.cur{border-color:var(--acc,#0A6CDF)}
+.pwhead{display:flex;gap:12px;align-items:flex-start;margin-bottom:6px}
+.pwnum{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(127,127,127,.15);font-weight:700;flex:none}
+.pwtopic{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding:10px 0;border-top:1px solid rgba(127,127,127,.15)}
+.pwtopic .row{flex-wrap:wrap;gap:10px}
+.pwtopic.locked{opacity:.6}
+@media (max-width:640px){.pwtopic{flex-direction:column}.pw-next .row{flex-wrap:wrap}}

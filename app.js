@@ -241,7 +241,7 @@ function illustrate(t){
 /* ================= NAVIGATION ================= */
 const MENU = [
  ["Overview",[["home","Dashboard","#0A6CDF","◎"],["insights","Insights & coach","#C2410C","✚"]]],
- ["Study",[["learn","Learning path","#1E8A4C","▤"],["path","Role roadmaps","#166534","➚"],["lab","Cyber Lab (LabOS)","#334155","$_"],["ideas","Project ideas","#A2620A","◇"],["projects","Projects","#7A4BC4","⚒"],["automation","Automation tools","#0F766E","⟳"],["certs","Certifications","#0E7490","✦"],["videos","Video bookmarks","#C2410C","▶"]]],
+ ["Study",[["learn","Learn by role","#1E8A4C","▤"],["lab","Cyber Lab (LabOS)","#334155","$_"],["ideas","Project ideas","#A2620A","◇"],["projects","Projects","#7A4BC4","⚒"],["automation","Automation tools","#0F766E","⟳"],["certs","Certifications","#0E7490","✦"],["videos","Video bookmarks","#C2410C","▶"]]],
  ["Career",[["roles","Role pages & readiness","#0E7490","◆"],["matrix","Roles × subjects","#155E75","▦"],["applications","Applications & Gmail","#B42318","✉"],["jobs","Jobs to target","#A2620A","▣"],["resume","Resume builder","#0A6CDF","¶"],["linkedin","LinkedIn","#2563EB","in"]]],
  ["People & news",[["network","Network","#1E8A4C","☍"],["news","News & regulations","#9D174D","§"],["updates","Updates","#C2410C","↻"]]],
  ["Help",[["support","Help & support (AI)","#2563EB","?"],["mentors","Student support","#15803D","☏"]]],
@@ -256,79 +256,6 @@ function totalXP(){ return Object.keys(S.progress.done).length*10 + TOPICS.filte
 function levelOf(xp){ const lvl = Math.floor(Math.sqrt(xp/60)) + 1, cur = (lvl-1)**2*60, nx = lvl**2*60; return {lvl, pct: Math.round((xp-cur)/(nx-cur)*100), toNext: nx-xp}; }
 function nextMission(){ return MISSIONS.find(m => missionUnlocked(m) && !labGet(m.id).done); }
 function greeting(){ const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"; }
-function viewHome(){
-  const all = groupStats(TOPICS), p = S.profile, wk = weekCount(), st = streak(), xp = totalXP(), lvl = levelOf(xp);
-  const ranked = ROLES.map(r => ({r, p:roleReady(r)})).sort((a,b) => b.p - a.p);
-  const targets = (p.targets||[]).length ? ranked.filter(x=>p.targets.includes(x.r.id)) : ranked.slice(0,3);
-  const certIds = [...new Set((p.targets||[]).length ? p.targets.flatMap(id=>(ROLE_CERTS[id]||[]).filter(x=>x[1]===1).map(x=>x[0])) : ["cc","cippe","isola"])];
-  const due = (S.network.contacts||[]).filter(c => c.follow && c.follow <= today() && c.stage !== "Referral");
-  const apps = S.network.apps||[], appsWeek = apps.filter(a => a.date && (Date.now()-new Date(a.date))/864e5 < 7).length;
-  const cp = currentPhase(), next = nextSubs(3), revs = reviewsDue(), rs = S.resume.last;
-  const cont = continueProject(), nm = nextMission(), ns = next[0], ins = collectInsights();
-  const labDone = MISSIONS.filter(m=>labGet(m.id).done).length, stars = MISSIONS.reduce((a,m)=>a+labGet(m.id).stars,0);
-  const WEEKS = 18, start = new Date(); start.setDate(start.getDate() - (WEEKS*7 - 1));
-  let cal = `<div class="heatcal wide" style="--wk:${WEEKS}" aria-label="Activity over the last ${WEEKS} weeks">`;
-  for (let w=0; w<WEEKS; w++){ cal += `<div class="wk">`; for (let d=0; d<7; d++){ const dt=new Date(start); dt.setDate(start.getDate()+w*7+d); const n=S.progress.log[dayStr(dt)]||0; cal += `<div class="d ${n>=6?"a3":n>=3?"a2":n>0?"a1":""}" title="${dayStr(dt)}: ${n}"></div>`; } cal += `</div>`; }
-  cal += `</div>`;
-  const first = (p.name||"Jyotirmaya Negi").split(" ")[0], fr = focusRole(), FP = fr ? pathOf(fr) : null;
-  const frTopics = fr ? roleTopicIds(fr).map(id=>TOPIC[id]).filter(Boolean) : TOPICS, frStats = groupStats(frTopics);
-  const tApps = TRK.ok ? TRK.apps : (S.network.apps||[]), tWeek = tApps.filter(a => { const d = a.appliedAt || a.date; return d && (Date.now()-new Date(d))/864e5 < 7; }).length;
-  const opsDone = OPS.filter(o => opGet(o.id).done).length, nextDl = (NEWS||[]).filter(n => n.deadline && daysUntil(n.deadline) >= 0).sort((a,b)=>String(a.deadline).localeCompare(String(b.deadline)))[0];
-  return `
-  <div class="card hero"><div class="row between"><div class="row" style="gap:14px;flex-wrap:nowrap;min-width:0">${avatarHTML("lg")}<div style="display:grid;gap:2px;min-width:0">
-    <span class="eyebrow">${new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})}</span><h2>${greeting()}, ${esc(first)}</h2>
-    <p class="muted">${esc(p.headline||"Law graduate moving into Privacy & GRC")}</p></div></div>
-    <div class="xpbox"><div class="row" style="flex-wrap:nowrap">${ring(lvl.pct,"acc")}<div><b>Level ${lvl.lvl}</b><div class="num">${xp} XP · ${lvl.toNext} to level ${lvl.lvl+1}</div></div></div><div class="row"><span class="pill acc">🔥 ${st} day streak</span><span class="pill">${wk} actions this week</span></div></div></div>
-    <div class="contgrid">
-      <button class="cont" ${ns?`data-go="${ns.t.id}" data-anchor="s-${ns.i}"`:'data-go="learn"'}><span class="ci" style="background:var(--l1)">▤</span><span><span class="num">Continue learning</span><b>${ns?esc(ns.s.t):"Path complete at this depth"}</b><span class="num">${ns?esc(ns.t.title):"Open the learning path"}</span></span></button>
-      <button class="cont" ${cont?`data-go="proj-${cont.id}"`:'data-go="projects"'}><span class="ci" style="background:var(--l3)">⚒</span><span><span class="num">Project · ${cont?INTENSITY_NAME[cont.lvl]:"all done"}</span><b>${cont?esc(cont.title):"All projects passed"}</b><span class="num">${cont?esc(TOPIC[cont.topic].title)+" · "+projPct(cont)+"% of steps":""}</span></span></button>
-      <button class="cont" ${nm?`data-go="lab-${nm.id}"`:'data-go="lab"'}><span class="ci" style="background:var(--seal)">$_</span><span><span class="num">Cyber Lab</span><b>${nm?esc(nm.title):"Every mission complete"}</b><span class="num">${nm?esc(ZONES.find(z=>z.id===nm.zone).name):"Replay for 3 stars"}</span></span></button>
-    </div></div>
-  <div class="duo homeduo">
-    <div class="card cube actcard"><div class="row between"><span class="eyebrow">Activity, last 18 weeks</span><span class="num">🔥 ${st}-day streak · ${wk} this week</span></div>${cal}<div class="row between"><span class="num">One square per day, today is the last square. Counts ticked subtopics, quiz answers, subjects opened, lab and project steps, applications and contacts added.</span><span class="heatkey" aria-hidden="true"><i></i><i class="a1"></i><i class="a2"></i><i class="a3"></i></span></div></div>
-    ${studyCube(fr, {home:true})}
-  </div>
-  <div class="grid4">
-    <div class="card tile"><div class="row between"><span class="lbl">Learning path</span><button class="link" data-go="learn">Open</button></div><div class="row">${ring(frStats.p)}<span class="num">${frStats.d}/${frStats.n}<br>sub-topics</span></div><span class="num">for ${esc(roleShort(fr))}</span></div>
-    <div class="card tile"><div class="row between"><span class="lbl">Projects passed</span><button class="link" data-go="projects">Open</button></div><span class="big">${passedCount()}<span class="num"> / ${ALLPROJ.length}</span></span>
-      <div class="lvlbars">${[1,2,3].map(l=>`<span class="num">${INTENSITY_NAME[l][0]}</span>${bar(Math.round(passedCount(l)/ALLPROJ.filter(p=>p.lvl===l).length*100), l===1?"":l===2?"acc":"l3")}`).join("")}</div></div>
-    <div class="card tile"><span class="lbl">Cyber Lab</span><span class="big">${totalLabXPAll()}<span class="num"> XP</span></span><span class="num">${esc(rankFor(totalLabXPAll()).name)} · ${labDone}/${MISSIONS.length} missions · ${opsDone}/${OPS.length} tool projects</span></div>
-    <div class="card tile"><span class="lbl">Best role match</span><span class="big">${ranked[0].p}%</span><span class="num">${esc(ranked[0].r.name)}</span></div>
-    <div class="card tile"><span class="lbl">Quizzes passed</span><span class="big">${TOPICS.filter(t=>quizStats(t).pass).length}<span class="num"> / ${TOPICS.length}</span></span><span class="num">${revs.length} topic${revs.length===1?"":"s"} due for review</span></div>
-    <div class="card tile"><span class="lbl">Resume score</span><span class="big">${rs?rs.score:"–"}</span><span class="num">${rs?"Checked "+esc(rs.date):'<button class="link" data-go="resume">Upload and check</button>'}</span></div>
-    <div class="card tile"><span class="lbl">Applications</span><span class="big">${tApps.length}</span><span class="num">${tWeek} this week · ${tApps.filter(a=>["Interview","Offer"].includes(a.status)).length} at interview or offer</span></div>
-    <div class="card tile"><span class="lbl">Network</span><span class="big">${(S.network.contacts||[]).length}</span><span class="num">${(S.network.contacts||[]).filter(c=>["Connected","Talked","Referral"].includes(c.stage)).length} connected · ${due.length} follow-ups due</span></div>
-    <div class="card tile"><span class="lbl">News & regulations</span><span class="big">${(NEWS||[]).length}</span><span class="num">${nextDl?"Next deadline in "+daysUntil(nextDl.deadline)+" days":"Updated twice a week"}</span></div>
-    <div class="card tile"><span class="lbl">Stars & stages</span><span class="big">${stars}<span class="num"> ★</span></span><span class="num">${FP?`${FP.stages.filter(x=>stagePct(x)>=70).length}/${FP.stages.length} roadmap stages done`:"Pick a role for a roadmap"}</span></div>
-  </div>
-  <div class="grid2">${appsWidget()}${newsWidget()}</div>
-  <div class="grid2">
-    <div class="card"><div class="row between"><span class="eyebrow">Coach: what to fix next</span><button class="link" data-go="insights">All insights (${ins.length})</button></div>
-      ${ins.length?ins.slice(0,4).map(i=>`<div class="insight ${i.sev}"><div style="min-width:0"><b style="font-size:.9rem">${esc(i.title)}</b><p class="muted" style="font-size:.84rem;margin:2px 0 0">${esc(i.detail.slice(0,140))}${i.detail.length>140?"…":""}</p></div><button class="btn sm ghost" data-go="${esc(i.go)}" ${i.anchor?`data-anchor="${esc(i.anchor)}"`:""}>${esc(i.label)}</button></div>`).join(""):`<p class="muted">Nothing to fix yet. As you take quizzes, submit projects and play the Lab, this card shows what you got wrong and what to study.</p>`}</div>
-    <div class="card"><div class="row between"><span class="eyebrow">Mastery map</span><span class="num">learning + quiz + practice</span></div>
-      ${[1,2,3].map(l=>`<div class="mrow"><span class="ib ${LVL_CLS[l]}">${INTENSITY_NAME[l]}</span><div class="mgrid">${TOPICS.filter(t=>INTENSITY[t.id]===l).map(t=>{const m=Math.round(topicMastery(t)*100);return `<button class="mtile" style="--m:${m}" data-go="${t.id}" title="${esc(t.title)}: ${m}% mastery, ${ladderPassed(t.id)}/3 projects"><span>${esc(t.title.replace(/ \(.*\)/,"").split(":")[0])}</span><b>${m}%</b><i>${[0,1,2].map(k=>`<em class="${k<ladderPassed(t.id)?"on":""}"></em>`).join("")}</i></button>`;}).join("")}</div></div>`).join("")}
-      <span class="num">Darker tiles are stronger. Dots show projects passed (Beginner, Intermediate, Advanced).</span></div>
-  </div>
-  <div class="grid2">
-    <div class="card"><div class="row between"><span class="eyebrow">Today's plan</span><button class="link" data-go="learn">Full path</button></div>
-      ${next.length?next.map(x=>`<div class="row between"><div style="min-width:0"><b style="font-size:.92rem">${esc(x.s.t)}</b><div class="num">${esc(x.t.title)}</div></div><div class="row">${lv(x.s.l)}<button class="btn sm ghost" data-go="${x.t.id}" data-anchor="s-${x.i}">Study</button></div></div>`).join(""):`<p class="muted">Everything at your depth setting is done. Switch depth to "Everything" on a topic page for deep dives.</p>`}
-      ${revs.length?`<div class="inset"><b style="font-size:.88rem">Review for memory:</b> ${revs.slice(0,4).map(r=>`<button class="link" data-go="${r.id}" data-anchor="p-quiz">${esc(TOPIC[r.id].title)}</button>`).join(" · ")}</div>`:""}</div>
-    <div class="card"><span class="eyebrow">Learning path by phase</span>
-      ${PHASES.map((ph,i)=>{const s=groupStats(ph.ids.map(id=>TOPIC[id]));return `<div class="phasebar ${i===cp?"cur":""}"><b>${i+1}. ${esc(ph.name)}</b>${bar(s.p, i===cp?"acc":"")}<span class="num">${s.p}%</span></div>`;}).join("")}</div>
-  </div>
-  <div class="grid2">
-    <div class="card"><div class="row between"><span class="eyebrow">${(p.targets||[]).length?"Your target roles":"Closest roles"}</span><button class="link" data-go="roles">Details</button></div>
-      ${targets.map(x=>`<div class="rrow"><div style="min-width:0"><b style="font-size:.9rem">${esc(x.r.name)}</b>${bar(x.p,"acc")}</div><div class="row"><span class="num">${x.p}%</span>${readyPill(x.p)}</div></div>`).join("")}</div>
-    <div class="card"><div class="row between"><span class="eyebrow">Certifications to do now</span><button class="link" data-go="certs">Cert dashboard</button></div>
-      ${certIds.map(id=>{const c=CERT[id],r=certReady(c);return `<div class="rrow"><div style="min-width:0"><button class="link" data-go="cert-${c.id}" style="font-weight:600;text-decoration:none;color:var(--ink)">${esc(c.name)}</button>${bar(r,"l3")}</div><span class="num">${r}% covered</span></div>`;}).join("")}</div>
-  </div>
-  <div class="grid2">
-    <div class="card"><div class="row between"><span class="eyebrow">Follow-ups due</span><button class="link" data-go="network">Network</button></div>
-      ${due.length?due.slice(0,4).map(c=>`<div class="row between"><span>${esc(c.name)} <span class="muted">· ${esc(c.company||"")}</span></span><span class="num">${esc(c.follow)}</span></div>`).join(""):`<p class="muted">Nothing due.</p>`}</div>
-    <div class="card"><div class="row between"><span class="eyebrow">Latest updates</span><button class="link" data-go="updates">All</button></div>
-      ${UPDATES&&UPDATES.length?UPDATES.slice(0,3).map(u=>`<div><b style="font-size:.88rem">${esc(u.title)}</b><div class="num">${esc(u.date||"")}</div></div>`).join(""):`<p class="muted">Your weekly web check fills this in.</p>`}</div>
-  </div>`;
-}
 
 /* ================= LEARNING PATH ================= */
 function depthControl(){ return `<div class="row"><span class="num">Show depth</span><div class="seg" role="group" aria-label="Depth">${[[1,"Must know only"],[2,"+ Core"],[3,"Everything"]].map(([v,l])=>`<button aria-pressed="${depth===v}" data-depth="${v}">${l}</button>`).join("")}</div></div>`; }
@@ -562,6 +489,7 @@ function viewUpdates(){
 function viewProfile(){
   const p = S.profile, swatches = ["#0A6CDF","#C2410C","#1E8A4C","#7A4BC4","#0E1621","#A2620A"];
   return `<div><span class="eyebrow">Profile</span><h2>Your profile</h2></div>
+  ${activityCard()}
   <div class="card"><div class="row" style="gap:18px">${avatarHTML("lg")}<div style="display:grid;gap:8px">
     <span class="num">Avatar colour</span><div class="row">${swatches.map(c=>`<button aria-label="Colour ${c}" data-color="${c}" style="width:28px;height:28px;border-radius:50%;border:${p.color===c?"3px solid var(--ink)":"1px solid var(--line)"};background:${c};cursor:pointer"></button>`).join("")}</div>
     <label class="f">Upload a photo<input type="file" id="avFile" accept="image/*"></label><span class="num" id="avMsg">Any phone photo works: it is resized on your device first.</span>${(p.avatarId||p.avatarUrl||p.avatarData)?`<button class="link" id="avClear">Use initials instead</button>`:""}</div></div></div>

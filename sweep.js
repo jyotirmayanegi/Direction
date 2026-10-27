@@ -39,28 +39,21 @@ const EXTRA=`(()=>{const o=window.claude.use; const L={}; const me={peer:'p1',by
  const T={};
  // home layout: duo with tracker and cube side by side, same height
  await page.evaluate(()=>go('home')); await page.waitForTimeout(300);
- T.duo=await page.evaluate(()=>{ const d=document.querySelector('.homeduo'); if(!d) return 'missing'; const [a,b]=[...d.children].map(x=>x.getBoundingClientRect()); return {sameRow:Math.abs(a.top-b.top)<2, sameH:Math.abs(a.height-b.height)<2, wA:Math.round(a.width), wB:Math.round(b.width)}; });
+ T.duo=await page.evaluate(()=>{ const d=document.querySelector('.homeduo'); if(!d) return 'home-clean'; const [a,b]=[...d.children].map(x=>x.getBoundingClientRect()); return {sameRow:Math.abs(a.top-b.top)<2, sameH:Math.abs(a.height-b.height)<2, wA:Math.round(a.width), wB:Math.round(b.width)}; });
  await page.screenshot({path:OUT+'/v8-home.png'});
  // focus role always set, no "All subjects"
  T.noAll=await page.evaluate(()=>!document.body.innerHTML.includes('>All subjects<'));
  // role page
  await page.evaluate(()=>go('role-aigov')); await page.waitForTimeout(250);
- T.role=await page.evaluate(()=>({h:document.querySelector('.thead h2').textContent, parts:document.querySelectorAll('.parts a').length, jargon:document.querySelectorAll('.jargon .jg').length, ai:!!document.querySelector('#r-ai .aimeter'), must:document.querySelectorAll('#r-must .mk-list li').length, cmd:!!document.querySelector('#r-ask .cmdbar')}));
+ T.role=await page.evaluate(()=>({h:document.querySelector('.thead h2').textContent, steps:document.querySelectorAll('.pwstep').length, tools:document.querySelectorAll('.pwstep .pwtopic.locked, .pwstep .pwtopic').length}));
  await page.screenshot({path:OUT+'/v8-role.png', fullPage:true});
- // command bar on role page
- await page.fill('#cmd-role-aigov','/'); await page.waitForTimeout(100); T.sug=await page.evaluate(()=>document.querySelectorAll('#r-ask .cmdsug button').length);
- await page.fill('#cmd-role-aigov','/what FRIA'); await page.press('#cmd-role-aigov','Enter'); await page.waitForTimeout(500);
- T.cmdOut=await page.evaluate(()=>{ const o=document.querySelector('#r-ask .cmdout'); return o && !o.hidden ? o.textContent.slice(0,80) : 'none'; });
- await page.click('#r-ask [data-cmdrun$="|/help"]'); await page.waitForTimeout(100); T.help=await page.evaluate(()=>document.querySelectorAll('#r-ask .cmdhelp>div').length);
  // topic page: AI impact + command bar + jargon local
  await page.evaluate(()=>go('ai-euact')); await page.waitForTimeout(250);
  T.topic=await page.evaluate(()=>({ai:!!document.getElementById('p-ai'), cmd:!!document.querySelector('#p-ask .cmdbar'), subs:document.querySelectorAll('.sub').length}));
  await page.click('#p-ask [data-cmdrun$="|/jargon"]'); await page.waitForTimeout(100); T.jargon=await page.evaluate(()=>document.querySelectorAll('#p-ask .jargon .jg').length);
  // learning page: must-know default, venn present, full toggle works
  await page.evaluate(()=>{ setFocus('aigov'); go('learn'); }); await page.waitForTimeout(200);
- T.learn=await page.evaluate(()=>({venn:!!document.querySelector('.vennsvg'), must:document.querySelectorAll('.mkcard .mk-list li').length, tracks:!!document.querySelector('[data-trackf]')}));
- await page.click('[data-lmode="full"]'); await page.waitForTimeout(150); T.full=await page.evaluate(()=>!!document.querySelector('[data-trackf]'));
- await page.click('[data-lmode="must"]');
+ T.learn=await page.evaluate(()=>({hub:!!document.querySelector('.pwhub'), roles:document.querySelectorAll('.pw-role').length}));
  // menu search (sidebar) + ctrl-k
  await page.keyboard.press('Control+k'); await page.waitForTimeout(100); T.ctrlk=await page.evaluate(()=>document.activeElement && document.activeElement.classList.contains('navq'));
  await page.keyboard.type('owasp'); await page.waitForTimeout(150);

@@ -1018,6 +1018,24 @@ body.modal-open{overflow:hidden}
 .qprow code.pw{user-select:all}
 .qprow .row{gap:6px;flex-wrap:nowrap}
 
+/* ---- role pathways, learn hub, clean home ---- */
+.pwhub{display:grid;gap:14px}
+.pw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:10px}
+.pw-role{border:1px solid rgba(127,127,127,.25);border-radius:14px;padding:14px;display:grid;gap:8px;min-width:0}
+.pw-role.on{border-color:var(--acc,#0A6CDF)}
+.pw-next{display:grid;gap:12px}
+.pw-next h3{margin:2px 0}
+.pw-quick{flex-wrap:wrap;gap:8px}
+.pwstep{border-left:3px solid rgba(127,127,127,.3);padding:4px 0 4px 14px;margin:16px 0}
+.pwstep.done{border-color:#1E8A4C}
+.pwstep.cur{border-color:var(--acc,#0A6CDF)}
+.pwhead{display:flex;gap:12px;align-items:flex-start;margin-bottom:6px}
+.pwnum{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:rgba(127,127,127,.15);font-weight:700;flex:none}
+.pwtopic{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding:10px 0;border-top:1px solid rgba(127,127,127,.15)}
+.pwtopic .row{flex-wrap:wrap;gap:10px}
+.pwtopic.locked{opacity:.6}
+@media (max-width:640px){.pwtopic{flex-direction:column}.pw-next .row{flex-wrap:wrap}}
+
 </style>
 <div class="field" aria-hidden="true"><i></i><i></i><i></i></div>
 <nav class="sidewrap" id="side" aria-label="Sections"></nav>
@@ -7056,51 +7074,6 @@ document.addEventListener("change", e => { if (e.target.id === "vennRole") { ven
 
 /* ---------- learning path (separated by track) ---------- */
 let learnGroup2 = "role", trackF = "all", showNotNeeded = false, learnMode = "must";
-function viewLearn2(){
-  const fr = focusRole(), P = pathOf(fr), q = query.toLowerCase();
-  const inTrack = t => trackF === "all" || t.track === trackF;
-  const needed = t => !fr || !!topicNeed(fr, t.id);
-  const hits = q ? TOPICS.flatMap(t => t.subs.map((s,i) => ({t,s,i}))).filter(x => (x.s.t+" "+x.s.b).toLowerCase().includes(q)).slice(0,14) : [];
-  const card = (t, n) => topicCard(t, n, fr ? topicNeed(fr, t.id) : "");
-  let body = "";
-  if (learnGroup2 === "track") {
-    body = TRACK_ORDER.filter(tr => trackF === "all" || tr === trackF).map(tr => {
-      const I = TRACK_INFO[tr], all = TOPICS.filter(t => t.track === tr), list = fr ? (P ? [...P.core, ...P.support].map(id => TOPIC[id]).filter(t => t && t.track === tr) : all) : all;
-      if (!list.length) return fr ? `<div class="trackskip"><span class="tk" style="--tc:${I.color}">${I.icon}</span><span><b>${esc(I.name)}</b> — not needed for ${esc(roleShort(fr))}. <span class="muted">${all.length} subjects hidden.</span></span></div>` : "";
-      const s = groupStats(list);
-      return `<section class="phase trackbox" style="--tc:${I.color}"><div class="phase-h"><span class="tk">${I.icon}</span><h3>${esc(I.name)}</h3><span class="num">${list.length} subject${list.length>1?"s":""} · ${s.p}% learned · ${esc(I.blurb)}</span></div>
-        <div class="grid3">${list.map((t,i) => card(t, i+1)).join("")}</div></section>`; }).join("");
-  } else if (learnGroup2 === "role" && P) {
-    const core = P.core.map(id => TOPIC[id]).filter(t => t && inTrack(t)), sup = P.support.map(id => TOPIC[id]).filter(t => t && inTrack(t));
-    body = `<section class="phase"><div class="phase-h"><span class="pn">CORE</span><h3>Study these in order</h3><span class="num">${groupStats(core).p}% learned</span></div><div class="grid3">${core.map((t,i)=>card(t,i+1)).join("")}</div></section>
-      <section class="phase"><div class="phase-h"><span class="pn">SUPPORT</span><h3>Learn enough to talk about these</h3><span class="num">${groupStats(sup).p}% learned</span></div><div class="grid3">${sup.map((t,i)=>card(t,core.length+i+1)).join("")}</div></section>`;
-  } else if (learnGroup2 === "intensity") {
-    body = [1,2,3].map(l => { const shown = TOPICS.filter(t => INTENSITY[t.id]===l && inTrack(t) && needed(t)); if (!shown.length) return ""; return `<section class="phase"><div class="phase-h">${lvBadge(l)}<h3>${l===1?"Foundation: no background needed":l===2?"Working knowledge: needs the foundations":"Specialist: sector rules, incidents and enterprise tools"}</h3><span class="num">${groupStats(shown).p}% learned</span></div><div class="grid3">${shown.map(t=>card(t, TOPICS.indexOf(t)+1)).join("")}</div></section>`; }).join("");
-  } else {
-    let n = 0;
-    body = PHASES.map((ph,pi) => { const ts = ph.ids.map(id => TOPIC[id]).filter(Boolean); const start = n; n += ts.length; const shown = ts.filter(t => inTrack(t) && needed(t)); if (!shown.length) return ""; const s = groupStats(shown);
-      return `<section class="phase"><div class="phase-h"><span class="pn">PHASE ${pi+1}</span><h3>${esc(ph.name)}</h3><span class="num">${s.p}% · ${esc(ph.why)}</span></div><div class="grid3">${shown.map(t=>card(t, start+ts.indexOf(t)+1)).join("")}</div></section>`; }).join("");
-  }
-  const notNeeded = fr ? TOPICS.filter(t => !topicNeed(fr, t.id) && inTrack(t)) : [];
-  const modeSeg = `<div class="seg modeseg" role="group" aria-label="View">${[["must","Must know"],["full","Full path"]].map(([v,l])=>`<button aria-pressed="${learnMode===v}" data-lmode="${v}">${l}</button>`).join("")}</div>`;
-  if (learnMode === "must") return `<div class="row between"><div><span class="eyebrow">Learning path</span><h2>Your path for ${esc(roleShort(fr))}</h2></div>${modeSeg}</div>
-  ${roleChipRow()}
-  ${vennCard()}
-  <section class="card mkcard"><div class="row between"><div><span class="eyebrow">Must know</span><h3>Only what to read and which tools to use</h3></div><button class="btn sm ghost" data-go="role-${fr}">Role page</button></div>${mustKnow(fr)}</section>`;
-  return `${modeSeg}<div><span class="eyebrow">Learning path</span><h2>${fr ? "Your path for " + esc(roleShort(fr)) : "Study by track"}</h2></div>
-  ${roleChipRow()}
-  ${vennCard()}
-  ${fr && P ? `<div class="card focuscard"><div class="row between"><div style="min-width:0"><span class="eyebrow">Studying for</span><h3>${esc(ROLE[fr].name)}</h3><p class="muted" style="font-size:.9rem;margin:4px 0 0">${esc(P.why)}</p></div><div class="row">${ring(roleReady(ROLE[fr]),"acc")}<button class="btn sm" data-go="path">Open roadmap</button></div></div>
-    <div class="row"><span class="pill acc">${P.core.length} core</span><span class="pill">${P.support.length} supporting</span><span class="pill">${notNeeded.length} not needed</span></div>
-    <div class="inset"><b style="font-size:.88rem">You can skip:</b> <span style="font-size:.9rem">${esc(P.skip)}</span></div></div>` : `<div class="card"><p style="margin:0">Subjects are split into five separate tracks so cybersecurity, compliance, tools, business and specialist legal subjects never mix. Pick a role above to see only what that role needs.</p></div>`}
-  <div class="card">${legend()}
-    <div class="row between"><div class="row"><div class="seg" role="group" aria-label="Group by">${[["track","By track"],...(P?[["role","Role order"]]:[]),["intensity","By intensity"],["phase","Learning phases"]].map(([v,l])=>`<button aria-pressed="${learnGroup2===v}" data-lgroup2="${v}">${l}</button>`).join("")}</div>
-      <div class="seg" role="group" aria-label="Track">${[["all","All tracks"],...TRACK_ORDER.map(k=>[k,TRACK_INFO[k].short])].map(([v,l])=>`<button aria-pressed="${trackF===v}" data-trackf="${v}">${esc(l)}</button>`).join("")}</div></div>
-    <input type="search" id="q" placeholder="Search, e.g. consent, MFA, KYC" value="${esc(query)}" style="max-width:300px"></div></div>
-  ${hits.length?`<div class="card"><span class="eyebrow">Matching sub-topics</span>${hits.map(x=>`<div class="row between"><button class="link" data-go="${x.t.id}" data-anchor="s-${x.i}">${esc(x.s.t)}</button><span class="row">${lv(x.s.l)}<span class="num">${esc(x.t.title)}</span></span></div>`).join("")}</div>`:""}
-  ${body || `<div class="card"><p class="muted">Nothing in this track for this role. Pick another track or role.</p></div>`}
-  ${notNeeded.length ? `<div class="card"><button class="link" data-shownot="1">${showNotNeeded?"Hide":"Show"} ${notNeeded.length} subject${notNeeded.length>1?"s":""} ${esc(roleShort(fr))} doesn't need</button>${showNotNeeded?`<div class="grid3" style="margin-top:10px">${notNeeded.map(t=>topicCard(t, TOPICS.indexOf(t)+1, "")).join("")}</div>`:""}</div>` : ""}`;
-}
 
 /* ---------- roadmap page ---------- */
 let pathRole = null;
@@ -8058,7 +8031,7 @@ function illustrate(t){
 /* ================= NAVIGATION ================= */
 const MENU = [
  ["Overview",[["home","Dashboard","#0A6CDF","◎"],["insights","Insights & coach","#C2410C","✚"]]],
- ["Study",[["learn","Learning path","#1E8A4C","▤"],["path","Role roadmaps","#166534","➚"],["lab","Cyber Lab (LabOS)","#334155","$_"],["ideas","Project ideas","#A2620A","◇"],["projects","Projects","#7A4BC4","⚒"],["automation","Automation tools","#0F766E","⟳"],["certs","Certifications","#0E7490","✦"],["videos","Video bookmarks","#C2410C","▶"]]],
+ ["Study",[["learn","Learn by role","#1E8A4C","▤"],["lab","Cyber Lab (LabOS)","#334155","$_"],["ideas","Project ideas","#A2620A","◇"],["projects","Projects","#7A4BC4","⚒"],["automation","Automation tools","#0F766E","⟳"],["certs","Certifications","#0E7490","✦"],["videos","Video bookmarks","#C2410C","▶"]]],
  ["Career",[["roles","Role pages & readiness","#0E7490","◆"],["matrix","Roles × subjects","#155E75","▦"],["applications","Applications & Gmail","#B42318","✉"],["jobs","Jobs to target","#A2620A","▣"],["resume","Resume builder","#0A6CDF","¶"],["linkedin","LinkedIn","#2563EB","in"]]],
  ["People & news",[["network","Network","#1E8A4C","☍"],["news","News & regulations","#9D174D","§"],["updates","Updates","#C2410C","↻"]]],
  ["Help",[["support","Help & support (AI)","#2563EB","?"],["mentors","Student support","#15803D","☏"]]],
@@ -8073,79 +8046,6 @@ function totalXP(){ return Object.keys(S.progress.done).length*10 + TOPICS.filte
 function levelOf(xp){ const lvl = Math.floor(Math.sqrt(xp/60)) + 1, cur = (lvl-1)**2*60, nx = lvl**2*60; return {lvl, pct: Math.round((xp-cur)/(nx-cur)*100), toNext: nx-xp}; }
 function nextMission(){ return MISSIONS.find(m => missionUnlocked(m) && !labGet(m.id).done); }
 function greeting(){ const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"; }
-function viewHome(){
-  const all = groupStats(TOPICS), p = S.profile, wk = weekCount(), st = streak(), xp = totalXP(), lvl = levelOf(xp);
-  const ranked = ROLES.map(r => ({r, p:roleReady(r)})).sort((a,b) => b.p - a.p);
-  const targets = (p.targets||[]).length ? ranked.filter(x=>p.targets.includes(x.r.id)) : ranked.slice(0,3);
-  const certIds = [...new Set((p.targets||[]).length ? p.targets.flatMap(id=>(ROLE_CERTS[id]||[]).filter(x=>x[1]===1).map(x=>x[0])) : ["cc","cippe","isola"])];
-  const due = (S.network.contacts||[]).filter(c => c.follow && c.follow <= today() && c.stage !== "Referral");
-  const apps = S.network.apps||[], appsWeek = apps.filter(a => a.date && (Date.now()-new Date(a.date))/864e5 < 7).length;
-  const cp = currentPhase(), next = nextSubs(3), revs = reviewsDue(), rs = S.resume.last;
-  const cont = continueProject(), nm = nextMission(), ns = next[0], ins = collectInsights();
-  const labDone = MISSIONS.filter(m=>labGet(m.id).done).length, stars = MISSIONS.reduce((a,m)=>a+labGet(m.id).stars,0);
-  const WEEKS = 18, start = new Date(); start.setDate(start.getDate() - (WEEKS*7 - 1));
-  let cal = `<div class="heatcal wide" style="--wk:${WEEKS}" aria-label="Activity over the last ${WEEKS} weeks">`;
-  for (let w=0; w<WEEKS; w++){ cal += `<div class="wk">`; for (let d=0; d<7; d++){ const dt=new Date(start); dt.setDate(start.getDate()+w*7+d); const n=S.progress.log[dayStr(dt)]||0; cal += `<div class="d ${n>=6?"a3":n>=3?"a2":n>0?"a1":""}" title="${dayStr(dt)}: ${n}"></div>`; } cal += `</div>`; }
-  cal += `</div>`;
-  const first = (p.name||"Jyotirmaya Negi").split(" ")[0], fr = focusRole(), FP = fr ? pathOf(fr) : null;
-  const frTopics = fr ? roleTopicIds(fr).map(id=>TOPIC[id]).filter(Boolean) : TOPICS, frStats = groupStats(frTopics);
-  const tApps = TRK.ok ? TRK.apps : (S.network.apps||[]), tWeek = tApps.filter(a => { const d = a.appliedAt || a.date; return d && (Date.now()-new Date(d))/864e5 < 7; }).length;
-  const opsDone = OPS.filter(o => opGet(o.id).done).length, nextDl = (NEWS||[]).filter(n => n.deadline && daysUntil(n.deadline) >= 0).sort((a,b)=>String(a.deadline).localeCompare(String(b.deadline)))[0];
-  return `
-  <div class="card hero"><div class="row between"><div class="row" style="gap:14px;flex-wrap:nowrap;min-width:0">${avatarHTML("lg")}<div style="display:grid;gap:2px;min-width:0">
-    <span class="eyebrow">${new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})}</span><h2>${greeting()}, ${esc(first)}</h2>
-    <p class="muted">${esc(p.headline||"Law graduate moving into Privacy & GRC")}</p></div></div>
-    <div class="xpbox"><div class="row" style="flex-wrap:nowrap">${ring(lvl.pct,"acc")}<div><b>Level ${lvl.lvl}</b><div class="num">${xp} XP · ${lvl.toNext} to level ${lvl.lvl+1}</div></div></div><div class="row"><span class="pill acc">🔥 ${st} day streak</span><span class="pill">${wk} actions this week</span></div></div></div>
-    <div class="contgrid">
-      <button class="cont" ${ns?`data-go="${ns.t.id}" data-anchor="s-${ns.i}"`:'data-go="learn"'}><span class="ci" style="background:var(--l1)">▤</span><span><span class="num">Continue learning</span><b>${ns?esc(ns.s.t):"Path complete at this depth"}</b><span class="num">${ns?esc(ns.t.title):"Open the learning path"}</span></span></button>
-      <button class="cont" ${cont?`data-go="proj-${cont.id}"`:'data-go="projects"'}><span class="ci" style="background:var(--l3)">⚒</span><span><span class="num">Project · ${cont?INTENSITY_NAME[cont.lvl]:"all done"}</span><b>${cont?esc(cont.title):"All projects passed"}</b><span class="num">${cont?esc(TOPIC[cont.topic].title)+" · "+projPct(cont)+"% of steps":""}</span></span></button>
-      <button class="cont" ${nm?`data-go="lab-${nm.id}"`:'data-go="lab"'}><span class="ci" style="background:var(--seal)">$_</span><span><span class="num">Cyber Lab</span><b>${nm?esc(nm.title):"Every mission complete"}</b><span class="num">${nm?esc(ZONES.find(z=>z.id===nm.zone).name):"Replay for 3 stars"}</span></span></button>
-    </div></div>
-  <div class="duo homeduo">
-    <div class="card cube actcard"><div class="row between"><span class="eyebrow">Activity, last 18 weeks</span><span class="num">🔥 ${st}-day streak · ${wk} this week</span></div>${cal}<div class="row between"><span class="num">One square per day, today is the last square. Counts ticked subtopics, quiz answers, subjects opened, lab and project steps, applications and contacts added.</span><span class="heatkey" aria-hidden="true"><i></i><i class="a1"></i><i class="a2"></i><i class="a3"></i></span></div></div>
-    ${studyCube(fr, {home:true})}
-  </div>
-  <div class="grid4">
-    <div class="card tile"><div class="row between"><span class="lbl">Learning path</span><button class="link" data-go="learn">Open</button></div><div class="row">${ring(frStats.p)}<span class="num">${frStats.d}/${frStats.n}<br>sub-topics</span></div><span class="num">for ${esc(roleShort(fr))}</span></div>
-    <div class="card tile"><div class="row between"><span class="lbl">Projects passed</span><button class="link" data-go="projects">Open</button></div><span class="big">${passedCount()}<span class="num"> / ${ALLPROJ.length}</span></span>
-      <div class="lvlbars">${[1,2,3].map(l=>`<span class="num">${INTENSITY_NAME[l][0]}</span>${bar(Math.round(passedCount(l)/ALLPROJ.filter(p=>p.lvl===l).length*100), l===1?"":l===2?"acc":"l3")}`).join("")}</div></div>
-    <div class="card tile"><span class="lbl">Cyber Lab</span><span class="big">${totalLabXPAll()}<span class="num"> XP</span></span><span class="num">${esc(rankFor(totalLabXPAll()).name)} · ${labDone}/${MISSIONS.length} missions · ${opsDone}/${OPS.length} tool projects</span></div>
-    <div class="card tile"><span class="lbl">Best role match</span><span class="big">${ranked[0].p}%</span><span class="num">${esc(ranked[0].r.name)}</span></div>
-    <div class="card tile"><span class="lbl">Quizzes passed</span><span class="big">${TOPICS.filter(t=>quizStats(t).pass).length}<span class="num"> / ${TOPICS.length}</span></span><span class="num">${revs.length} topic${revs.length===1?"":"s"} due for review</span></div>
-    <div class="card tile"><span class="lbl">Resume score</span><span class="big">${rs?rs.score:"–"}</span><span class="num">${rs?"Checked "+esc(rs.date):'<button class="link" data-go="resume">Upload and check</button>'}</span></div>
-    <div class="card tile"><span class="lbl">Applications</span><span class="big">${tApps.length}</span><span class="num">${tWeek} this week · ${tApps.filter(a=>["Interview","Offer"].includes(a.status)).length} at interview or offer</span></div>
-    <div class="card tile"><span class="lbl">Network</span><span class="big">${(S.network.contacts||[]).length}</span><span class="num">${(S.network.contacts||[]).filter(c=>["Connected","Talked","Referral"].includes(c.stage)).length} connected · ${due.length} follow-ups due</span></div>
-    <div class="card tile"><span class="lbl">News & regulations</span><span class="big">${(NEWS||[]).length}</span><span class="num">${nextDl?"Next deadline in "+daysUntil(nextDl.deadline)+" days":"Updated twice a week"}</span></div>
-    <div class="card tile"><span class="lbl">Stars & stages</span><span class="big">${stars}<span class="num"> ★</span></span><span class="num">${FP?`${FP.stages.filter(x=>stagePct(x)>=70).length}/${FP.stages.length} roadmap stages done`:"Pick a role for a roadmap"}</span></div>
-  </div>
-  <div class="grid2">${appsWidget()}${newsWidget()}</div>
-  <div class="grid2">
-    <div class="card"><div class="row between"><span class="eyebrow">Coach: what to fix next</span><button class="link" data-go="insights">All insights (${ins.length})</button></div>
-      ${ins.length?ins.slice(0,4).map(i=>`<div class="insight ${i.sev}"><div style="min-width:0"><b style="font-size:.9rem">${esc(i.title)}</b><p class="muted" style="font-size:.84rem;margin:2px 0 0">${esc(i.detail.slice(0,140))}${i.detail.length>140?"…":""}</p></div><button class="btn sm ghost" data-go="${esc(i.go)}" ${i.anchor?`data-anchor="${esc(i.anchor)}"`:""}>${esc(i.label)}</button></div>`).join(""):`<p class="muted">Nothing to fix yet. As you take quizzes, submit projects and play the Lab, this card shows what you got wrong and what to study.</p>`}</div>
-    <div class="card"><div class="row between"><span class="eyebrow">Mastery map</span><span class="num">learning + quiz + practice</span></div>
-      ${[1,2,3].map(l=>`<div class="mrow"><span class="ib ${LVL_CLS[l]}">${INTENSITY_NAME[l]}</span><div class="mgrid">${TOPICS.filter(t=>INTENSITY[t.id]===l).map(t=>{const m=Math.round(topicMastery(t)*100);return `<button class="mtile" style="--m:${m}" data-go="${t.id}" title="${esc(t.title)}: ${m}% mastery, ${ladderPassed(t.id)}/3 projects"><span>${esc(t.title.replace(/ \(.*\)/,"").split(":")[0])}</span><b>${m}%</b><i>${[0,1,2].map(k=>`<em class="${k<ladderPassed(t.id)?"on":""}"></em>`).join("")}</i></button>`;}).join("")}</div></div>`).join("")}
-      <span class="num">Darker tiles are stronger. Dots show projects passed (Beginner, Intermediate, Advanced).</span></div>
-  </div>
-  <div class="grid2">
-    <div class="card"><div class="row between"><span class="eyebrow">Today's plan</span><button class="link" data-go="learn">Full path</button></div>
-      ${next.length?next.map(x=>`<div class="row between"><div style="min-width:0"><b style="font-size:.92rem">${esc(x.s.t)}</b><div class="num">${esc(x.t.title)}</div></div><div class="row">${lv(x.s.l)}<button class="btn sm ghost" data-go="${x.t.id}" data-anchor="s-${x.i}">Study</button></div></div>`).join(""):`<p class="muted">Everything at your depth setting is done. Switch depth to "Everything" on a topic page for deep dives.</p>`}
-      ${revs.length?`<div class="inset"><b style="font-size:.88rem">Review for memory:</b> ${revs.slice(0,4).map(r=>`<button class="link" data-go="${r.id}" data-anchor="p-quiz">${esc(TOPIC[r.id].title)}</button>`).join(" · ")}</div>`:""}</div>
-    <div class="card"><span class="eyebrow">Learning path by phase</span>
-      ${PHASES.map((ph,i)=>{const s=groupStats(ph.ids.map(id=>TOPIC[id]));return `<div class="phasebar ${i===cp?"cur":""}"><b>${i+1}. ${esc(ph.name)}</b>${bar(s.p, i===cp?"acc":"")}<span class="num">${s.p}%</span></div>`;}).join("")}</div>
-  </div>
-  <div class="grid2">
-    <div class="card"><div class="row between"><span class="eyebrow">${(p.targets||[]).length?"Your target roles":"Closest roles"}</span><button class="link" data-go="roles">Details</button></div>
-      ${targets.map(x=>`<div class="rrow"><div style="min-width:0"><b style="font-size:.9rem">${esc(x.r.name)}</b>${bar(x.p,"acc")}</div><div class="row"><span class="num">${x.p}%</span>${readyPill(x.p)}</div></div>`).join("")}</div>
-    <div class="card"><div class="row between"><span class="eyebrow">Certifications to do now</span><button class="link" data-go="certs">Cert dashboard</button></div>
-      ${certIds.map(id=>{const c=CERT[id],r=certReady(c);return `<div class="rrow"><div style="min-width:0"><button class="link" data-go="cert-${c.id}" style="font-weight:600;text-decoration:none;color:var(--ink)">${esc(c.name)}</button>${bar(r,"l3")}</div><span class="num">${r}% covered</span></div>`;}).join("")}</div>
-  </div>
-  <div class="grid2">
-    <div class="card"><div class="row between"><span class="eyebrow">Follow-ups due</span><button class="link" data-go="network">Network</button></div>
-      ${due.length?due.slice(0,4).map(c=>`<div class="row between"><span>${esc(c.name)} <span class="muted">· ${esc(c.company||"")}</span></span><span class="num">${esc(c.follow)}</span></div>`).join(""):`<p class="muted">Nothing due.</p>`}</div>
-    <div class="card"><div class="row between"><span class="eyebrow">Latest updates</span><button class="link" data-go="updates">All</button></div>
-      ${UPDATES&&UPDATES.length?UPDATES.slice(0,3).map(u=>`<div><b style="font-size:.88rem">${esc(u.title)}</b><div class="num">${esc(u.date||"")}</div></div>`).join(""):`<p class="muted">Your weekly web check fills this in.</p>`}</div>
-  </div>`;
-}
 
 /* ================= LEARNING PATH ================= */
 function depthControl(){ return `<div class="row"><span class="num">Show depth</span><div class="seg" role="group" aria-label="Depth">${[[1,"Must know only"],[2,"+ Core"],[3,"Everything"]].map(([v,l])=>`<button aria-pressed="${depth===v}" data-depth="${v}">${l}</button>`).join("")}</div></div>`; }
@@ -8379,6 +8279,7 @@ function viewUpdates(){
 function viewProfile(){
   const p = S.profile, swatches = ["#0A6CDF","#C2410C","#1E8A4C","#7A4BC4","#0E1621","#A2620A"];
   return `<div><span class="eyebrow">Profile</span><h2>Your profile</h2></div>
+  ${activityCard()}
   <div class="card"><div class="row" style="gap:18px">${avatarHTML("lg")}<div style="display:grid;gap:8px">
     <span class="num">Avatar colour</span><div class="row">${swatches.map(c=>`<button aria-label="Colour ${c}" data-color="${c}" style="width:28px;height:28px;border-radius:50%;border:${p.color===c?"3px solid var(--ink)":"1px solid var(--line)"};background:${c};cursor:pointer"></button>`).join("")}</div>
     <label class="f">Upload a photo<input type="file" id="avFile" accept="image/*"></label><span class="num" id="avMsg">Any phone photo works: it is resized on your device first.</span>${(p.avatarId||p.avatarUrl||p.avatarData)?`<button class="link" id="avClear">Use initials instead</button>`:""}</div></div></div>
@@ -9121,50 +9022,6 @@ function mustKnow(rid, compact=false){
 }
 
 /* ---------- the role page ---------- */
-function viewRole(rid){
-  const R = ROLE[rid], P = pathOf(rid), I = ROLE_INFO[rid] || {}, f = focusRole();
-  if (!R || !P) return `<div class="card"><p>Role not found.</p><button class="btn" data-go="roles">All roles</button></div>`;
-  const rd = roleReady(R), req = ROLE_REQ[rid] || [], rtext = (S.resume.raw || "").toLowerCase();
-  const certs = (ROLE_CERTS[rid]||[]).slice().sort((a,b)=>a[1]-b[1]).map(([id,pr]) => [CERT[id], pr]).filter(x => x[0]);
-  const projs = ALLPROJ.filter(p => projRoles(p).includes(rid) || P.core.includes(p.topic)).filter(p => p.lvl === 1 || projUnlocked(p)).slice(0, 8);
-  const ops = (typeof OPS !== "undefined" ? OPS.filter(o => [...P.core, ...P.support].includes(o.topic)) : []);
-  const st = roleStreak(rid), wk = (() => { let n=0; const d=new Date(); for (let i=0;i<7;i++){ n+=roleDayCount(rid, dayStr(d)); d.setDate(d.getDate()-1);} return n; })();
-  const parts = [["r-dash","Dashboard"],["r-what","The job"],["r-must","Must know"],["r-jargon","Jargon"],["r-ai","AI & 10 years"],["r-req","Employers want"],["r-road","Roadmap"],["r-proof","Prove it"],["r-ask","Ask"]];
-  return `<div class="thead"><button class="link" data-go="roles">← All roles</button><span class="eyebrow">${esc(R.fit)}</span><h2>${esc(R.name)}</h2>
-    <div class="row">${rid===f?`<span class="pill ok">You're studying for this role</span>`:`<button class="btn sm" data-focus="${rid}">Study for this role</button>`}<a class="btn sm ghost" href="https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(R.q)}&location=India" target="_blank" rel="noopener">LinkedIn jobs</a><a class="btn sm ghost" href="https://www.naukri.com/${R.q.toLowerCase().replace(/\s+/g,"-")}-jobs" target="_blank" rel="noopener">Naukri jobs</a></div>
-    <nav class="parts" aria-label="Sections">${parts.map(([a,l],i)=>`<a href="#role-${rid}" data-anchor="${a}">${i+1}. ${l}</a>`).join("")}</nav></div>
-  <div class="duo" id="r-dash">
-    <div class="card cube actcard"><div class="row between"><span class="eyebrow">${esc(roleShort(rid))} activity</span><span class="num">🔥 ${st}-day streak · ${wk} this week</span></div>${heatCal(k => roleDayCount(rid, k), 18, roleShort(rid)+" activity")}<div class="row between"><span class="num">Days you studied this role's subjects, projects or Lab.</span><span class="heatkey" aria-hidden="true"><i></i><i class="a1"></i><i class="a2"></i><i class="a3"></i></span></div></div>
-    ${studyCube(rid, {title: rid===f ? "Studying for" : "Your progress"})}
-  </div>
-  <div class="grid4 rtiles">
-    <div class="card tile"><span class="lbl">Readiness</span><span class="big">${rd}%</span>${readyPill(rd)}</div>
-    <div class="card tile"><span class="lbl">Core subjects</span><span class="big">${P.core.filter(id=>TOPIC[id]&&topicStats(TOPIC[id]).p>=70).length}<span class="num"> / ${P.core.length}</span></span><span class="num">covered (70%+)</span></div>
-    <div class="card tile"><span class="lbl">Projects passed</span><span class="big">${ALLPROJ.filter(p=>P.core.includes(p.topic)&&projGet(p.id).passed).length}</span><span class="num">in this role's subjects</span></div>
-    <div class="card tile"><span class="lbl">AI exposure</span><span class="big">${AI_ROLE[rid]?aiBand(AI_ROLE[rid].x)[0]:"–"}</span><span class="num">${AI_ROLE[rid]?esc(AI_ROLE[rid].shift):""}</span></div>
-  </div>
-  <section class="card" id="r-what"><span class="eyebrow">The job in plain words</span><p class="lede" style="margin:4px 0 8px">${esc(I.what||"")}</p>
-    <div class="grid2"><div><b>A typical day</b><ul class="clean">${(I.day||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
-      <div><b>Who hires in India, and what's changing</b><p style="font-size:.92rem">${esc(I.industry||"")}</p><b>Why it fits you</b><p style="font-size:.92rem">${esc(P.why)}</p></div></div>
-    <b>Career ladder</b><div class="ladder2">${(I.ladder||[]).map((x,i)=>`<div class="lstep2 ${i===0?"cur":""}"><span class="num">${i+1}</span><b>${esc(x)}</b></div>`).join('<span class="arr" aria-hidden="true">→</span>')}</div>
-    <div class="row"><span class="num">Job titles to search:</span>${P.titles.map(t=>`<span class="pill">${esc(t)}</span>`).join("")}</div></section>
-  <section class="card" id="r-must"><div class="row between"><div><span class="eyebrow">Must know</span><h3>Only what to read and which tools to use</h3></div><span class="num">You can skip: ${esc(P.skip)}</span></div>${mustKnow(rid)}</section>
-  <section class="card" id="r-jargon"><span class="eyebrow">Jargon decoder</span><h3>Words you'll hear in week one</h3>
-    <div class="jargon">${Object.entries(I.jargon||{}).map(([k,v])=>`<div class="jg"><b>${esc(k)}</b><span>${esc(v)}</span><button class="link" data-cmdrun="role|${rid}|/what ${esc(k)}">Explain more</button></div>`).join("")}</div></section>
-  <div id="r-ai">${roleImpactCard(rid)}</div>
-  <section class="card" id="r-req"><span class="eyebrow">What employers ask for</span><h3>Requirements in job posts${rtext?" (checked against your resume)":""}</h3>
-    ${req.map(([label, kws, how, must]) => { const found = rtext ? kws.some(k => hasTerm(rtext, k.toLowerCase())) : null; const link = how.startsWith("cert:") ? (CERT[how.slice(5)] ? `<button class="link" data-go="cert-${how.slice(5)}">${esc(shortCert(CERT[how.slice(5)]))}</button>` : "") : (TOPIC[how] ? `<button class="link" data-go="${how}">${esc(TOPIC[how].title.replace(/ \(.*\)/,""))}</button>` : "");
-      return `<div class="reqrow"><span class="pill ${found===true?"ok":found===false?(must?"bad":"warn"):""}">${found===true?"On resume":found===false?"Missing":"–"}</span><span style="flex:1;min-width:160px">${esc(label)}${must?' <span class="pill hot">must-have</span>':""}</span><span class="num">Learn: ${link}</span></div>`; }).join("")}
-    ${rtext?"":`<p class="num">Upload your resume in the <button class="link" data-go="resume">Resume builder</button> to see which of these you already show.</p>`}</section>
-  <section class="card" id="r-road"><span class="eyebrow">Roadmap</span><h3>${P.stages.length} stages</h3>
-    <div class="rmlist">${P.stages.map((s,i)=>`<div class="rmstage ${stagePct(s)>=70?"done":i===currentStageIdx(rid)?"cur":""}"><div class="row between"><b>${i+1}. ${esc(s[0])}</b><span class="num">${esc(s[1])} · ${stagePct(s)}%</span></div>${bar(stagePct(s), i===currentStageIdx(rid)?"acc":"")}<p class="num" style="margin:4px 0">${esc(s[3])}</p><div class="row">${s[2].filter(id=>TOPIC[id]).map(id=>`<button class="pill ${topicStats(TOPIC[id]).p>=70?"ok":""}" data-go="${id}">${esc(TOPIC[id].title.replace(/ \(.*\)/,""))}</button>`).join("")}</div></div>`).join("")}</div>
-    ${certs.length?`<b>Certifications</b><div class="row">${certs.map(([c,pr])=>`<button class="pill ${pr===1?"acc":""}" data-go="cert-${c.id}">${pr===1?"Do now: ":pr===2?"Next: ":"Later: "}${esc(shortCert(c))} · ${certReady(c)}%</button>`).join("")}</div>`:""}</section>
-  <section class="card" id="r-proof"><span class="eyebrow">Prove it</span><h3>Projects and Lab work for this role</h3>
-    <div class="grid2"><div><b>Projects</b>${projs.map(p=>`<div class="row between"><button class="link" data-go="proj-${p.id}">${esc(p.title)}</button><span class="row">${lvBadge(p.lvl)}${projGet(p.id).passed?'<span class="pill ok">Passed</span>':""}</span></div>`).join("")||'<p class="muted">No projects mapped yet.</p>'}</div>
-      <div><b>Lab tool projects</b>${ops.length?ops.map(o=>`<div class="row between"><button class="link" data-labop="${o.id}" data-go="lab">${esc(o.title)}</button><span class="pill ${opGet(o.id).done?"ok":""}">${esc(o.kind)}</span></div>`).join(""):'<p class="muted">This role needs no hands-on Lab tools.</p>'}
-        <p class="num" style="margin-top:8px"><button class="link" data-go="ideas">Portfolio project ideas for this role →</button></p></div></div></section>
-  <section class="card" id="r-ask"><span class="eyebrow">Ask about this role</span><h3>Command bar</h3>${cmdBar("role", rid)}</section>`;
-}
 document.addEventListener("change", e => { if (e.target.id === "cubeRole") { setFocus(e.target.value); rerender(); } });
 
 /* ================= COMMAND BAR · HELP & SUPPORT · STUDENT SUPPORT (MENTORS) · MENU SEARCH ================= */
@@ -10369,6 +10226,133 @@ document.addEventListener("change", async e => {
   if (e.target.id === "liFile" && e.target.files.length) { liImport([...e.target.files]); return; }
   if (e.target.id === "liGoalInv" || e.target.id === "liGoalMsg") { const g = {inv: Math.max(1, +document.getElementById("liGoalInv").value || 20), msg: Math.max(1, +document.getElementById("liGoalMsg").value || 10)}; if (g.inv === LI.goal.inv && g.msg === LI.goal.msg) return; LI.goal = g; LI.meta.goal = g; liSaveMeta(); setTimeout(rerender, 0); }
 });
+
+/* ================= ROLE PATHWAYS, LEARN HUB, HOME, ROLE PAGE, ACTIVITY =================
+   Every role has its own pathway, in this order:
+   1. the basics, 2. the laws and frameworks, 3. cyber basics that help you talk to IT, 4. tools.
+   A tool is opened only after the basics and its prerequisite subjects reach PATH_DONE percent.
+   Hands-on Lab practice for a tool opens only after you have learned the tool. Loaded after the
+   older role files, so these functions replace the old home, learn hub and role page. */
+const PATH_DONE = 70;
+const isToolTopic = id => !!TOPIC[id] && (TOPIC[id].track === "tool" || id === "c-linux");
+
+function pathwayFor(rid){
+  const P = pathOf(rid); if (!P) return null;
+  const seen = new Set();
+  const learn = P.stages.map((s, i) => {
+    const ids = [];
+    s[2].forEach(id => { if (TOPIC[id] && !isToolTopic(id) && !seen.has(id)) { seen.add(id); ids.push(id); } });
+    return {n: i + 1, name: s[0], weeks: s[1], goal: s[3], ids};
+  }).filter(st => st.ids.length);
+  const rest = [...new Set([...P.core, ...P.support])].filter(id => TOPIC[id] && !isToolTopic(id) && !seen.has(id));
+  if (rest.length) learn.push({n: learn.length + 1, name: "More for this role", weeks: "", goal: "Learn enough to talk about these in interviews.", ids: rest});
+  learn.forEach((st, i) => st.n = i + 1);
+  const tools = [...new Set([...P.stages.flatMap(s => s[2]), ...P.core, ...P.support])].filter(id => TOPIC[id] && isToolTopic(id));
+  const all = [...learn.flatMap(st => st.ids), ...tools];
+  return {rid, P, learn, tools, all};
+}
+function stepPct(st){ const ids = st.ids.filter(id => TOPIC[id]); return ids.length ? Math.round(ids.reduce((a, id) => a + topicStats(TOPIC[id]).p, 0) / ids.length) : 0; }
+function pathwayPct(pw){ const ids = pw.all.filter(id => TOPIC[id]); return ids.length ? Math.round(ids.reduce((a, id) => a + topicStats(TOPIC[id]).p, 0) / ids.length) : 0; }
+function toolLocks(pw, id){
+  const why = [], first = pw.learn[0];
+  if (first && stepPct(first) < PATH_DONE) why.push('finish "' + first.name + '" first');
+  (PRE[id] || []).forEach(x => { if (TOPIC[x] && topicStats(TOPIC[x]).p < PATH_DONE) why.push('learn "' + TOPIC[x].title + '"'); });
+  return why;
+}
+function nextFor(pw){
+  for (const st of pw.learn) {
+    if (stepPct(st) >= PATH_DONE) continue;
+    const id = st.ids.find(i => topicStats(TOPIC[i]).p < PATH_DONE);
+    if (id) return {step: st, topic: TOPIC[id]};
+  }
+  const tid = pw.tools.find(i => topicStats(TOPIC[i]).p < PATH_DONE && !toolLocks(pw, i).length);
+  return tid ? {step: {name: "Tools"}, topic: TOPIC[tid]} : null;
+}
+function fieldOf(rid){ const g = ROLE_GROUPS.find(([name, ids]) => ids.includes(rid)); return g ? g[0] : "Other roles"; }
+function siblingsOf(rid){ const g = ROLE_GROUPS.find(([name, ids]) => ids.includes(rid)); return g ? g[1].filter(id => id !== rid && ROLE[id] && pathOf(id)) : []; }
+const ytFor = t => yt(((t.subs || [])[0] || {}).v || t.title);
+
+/* ---------- Learn hub: pick a role ---------- */
+function viewLearn2(){
+  return `<div class="pwhub">
+  <div><span class="eyebrow">Learn</span><h2>Pick a role, then follow its path</h2></div>
+  <p class="lede">Each role has its own path, in this order: the basics, the laws and frameworks, cyber basics that help you talk to IT, and then the tools. A tool opens only after the basics for it are done.</p>
+  ${ROLE_GROUPS.map(([g, ids]) => `<section class="card"><span class="eyebrow">${esc(g)}</span><div class="pw-grid">${ids.filter(id => ROLE[id] && pathOf(id)).map(id => {
+    const pw = pathwayFor(id), pct = pathwayPct(pw), studying = id === focusRole();
+    return `<article class="pw-role ${studying ? "on" : ""}"><div class="row between"><b>${esc(ROLE[id].name)}</b>${studying ? '<span class="pill ok">Studying</span>' : ""}</div>
+      <span class="num">${esc(ROLE[id].fit)} · ${pw.learn.length} steps${pw.tools.length ? " + " + pw.tools.length + " tools" : ""}</span>
+      ${bar(pct, "acc")}<div class="row between"><span class="num">${pct}% learned</span><button class="btn sm" data-go="role-${id}">Open path</button></div></article>`; }).join("")}</div></section>`).join("")}
+  </div>`;
+}
+
+/* ---------- Home: one next step, other roles in the same field, quick links ---------- */
+function viewHome(){
+  const p = S.profile, fr = focusRole(), pw = pathwayFor(fr), R = ROLE[fr];
+  const first = (p.name || "Jyotirmaya Negi").split(" ")[0], pct = pathwayPct(pw), nx = nextFor(pw), sib = siblingsOf(fr);
+  return `<div class="card hero"><span class="eyebrow">${new Date().toLocaleDateString("en-IN", {weekday: "long", day: "numeric", month: "long"})}</span>
+    <h2>${greeting()}, ${esc(first)}</h2><p class="muted">Studying for <b>${esc(R.name)}</b> · 🔥 ${streak()}-day streak</p></div>
+  <section class="card pw-next"><div class="row between" style="flex-wrap:nowrap;align-items:center">
+      <div style="min-width:0"><span class="eyebrow">Your next step</span>${nx
+        ? `<h3>${esc(nx.topic.title)}</h3><p class="muted">${esc(nx.step.name)}</p>`
+        : `<h3>Learning complete for this role</h3><p class="muted">Practise in the Lab and Projects next.</p>`}</div>
+      ${ring(pct, "acc")}</div>
+    <div class="row">${nx ? `<button class="btn" data-go="${nx.topic.id}">Continue</button>` : ""}<button class="btn ghost" data-go="role-${fr}">Full pathway</button></div></section>
+  <section class="card"><span class="eyebrow">Other roles in ${esc(fieldOf(fr))}</span>
+    <div class="row">${sib.map(id => `<button class="pill" data-go="role-${id}">${esc(roleShort(id))} · ${pathwayPct(pathwayFor(id))}%</button>`).join("") || '<span class="muted">No other roles in this field.</span>'}</div></section>
+  <div class="row pw-quick">${[["learn", "Learn"], ["lab", "Cyber Lab"], ["projects", "Projects"], ["jobs", "Jobs"], ["resume", "Resume"]].map(([g, l]) => `<button class="btn ghost" data-go="${g}">${l}</button>`).join("")}</div>`;
+}
+
+/* ---------- Role page: one pathway per role ---------- */
+function viewRole(rid){
+  const R = ROLE[rid], pw = R && pathwayFor(rid), I = ROLE_INFO[rid] || {};
+  if (!pw) return `<div class="card"><p>Role not found.</p><button class="btn" data-go="learn">Back to Learn</button></div>`;
+  const f = focusRole(), pct = pathwayPct(pw), nx = nextFor(pw), ops = typeof OPS !== "undefined" ? OPS : [];
+  const topicRow = id => { const t = TOPIC[id], s = topicStats(t);
+    return `<div class="pwtopic"><div style="min-width:0;flex:1"><button class="link strong" data-go="${id}">${esc(t.title)}</button>
+      <div class="num">${esc(t.short || "")}</div>${bar(s.p, s.p >= PATH_DONE ? "ok" : "")}</div>
+      <div class="row"><span class="num">${s.p >= PATH_DONE ? "Learned" : s.p + "%"}</span><a class="link" href="${ytFor(t)}" target="_blank" rel="noopener">Watch ▶</a></div></div>`; };
+  const learnSteps = pw.learn.map(st => { const sp = stepPct(st), done = sp >= PATH_DONE, cur = !done && nx && nx.step === st;
+    return `<section class="pwstep ${done ? "done" : cur ? "cur" : ""}"><div class="pwhead"><span class="pwnum">${done ? "✓" : st.n}</span>
+      <div style="min-width:0;flex:1"><b>${esc(st.name)}</b> <span class="num">${st.weeks ? "· " + esc(st.weeks) + " " : ""}· ${sp}%</span>
+      <p class="muted" style="margin:2px 0 0;font-size:.92rem">${esc(st.goal)}</p></div></div>
+      <div>${st.ids.map(topicRow).join("")}</div></section>`; }).join("");
+  const toolN = pw.learn.length + 1;
+  const toolsHTML = pw.tools.length ? `<section class="pwstep"><div class="pwhead"><span class="pwnum">${toolN}</span>
+      <div style="min-width:0;flex:1"><b>Tools for this role</b> <span class="num">· learn each tool before you use it</span>
+      <p class="muted" style="margin:2px 0 0;font-size:.92rem">A tool is taught here first. Hands-on Lab practice opens after you have learned that tool.</p></div></div>
+      ${pw.tools.map(id => { const t = TOPIC[id], s = topicStats(t), why = toolLocks(pw, id);
+        if (why.length) return `<div class="pwtopic locked"><div style="flex:1"><b>🔒 ${esc(t.title)}</b><div class="num">Opens after: ${esc(why.join("; "))}</div></div></div>`;
+        const lab = ops.filter(o => o.topic === id);
+        return `<div class="pwtopic"><div style="min-width:0;flex:1"><button class="link strong" data-go="${id}">${esc(t.title)}</button><div class="num">${esc(t.short || "")}</div>${bar(s.p, s.p >= PATH_DONE ? "ok" : "")}</div>
+          <div class="row"><span class="num">${s.p}% learned</span><a class="link" href="${ytFor(t)}" target="_blank" rel="noopener">Watch ▶</a>
+          ${s.p >= PATH_DONE ? lab.map(o => `<button class="link" data-labop="${o.id}" data-go="lab">Practise in Lab</button>`).join("") || `<span class="num">Practice in the Lab, Projects page</span>` : `<span class="num">Lab practice opens at ${PATH_DONE}%</span>`}</div></div>`; }).join("")}</section>` : "";
+  const must = (ROLE_REQ[rid] || []).filter(x => x[3]);
+  const rtext = (S.resume.raw || "").toLowerCase();
+  return `<div class="thead"><button class="link" data-go="learn">← All roles</button><span class="eyebrow">${esc(fieldOf(rid))}</span><h2>${esc(R.name)}</h2></div>
+  <section class="card pw-next"><div class="row between" style="flex-wrap:nowrap;align-items:center"><div style="min-width:0"><span class="eyebrow">${esc(R.fit)}</span>
+      <p class="muted" style="margin:4px 0 0">${esc(pw.P.why)}</p></div>${ring(pct, "acc")}</div>
+    <div class="row">${rid === f ? '<span class="pill ok">You are studying for this role</span>' : `<button class="btn" data-focus="${rid}">Study for this role</button>`}
+      ${nx ? `<button class="btn ghost" data-go="${nx.topic.id}">Continue: ${esc(nx.topic.title)}</button>` : ""}</div></section>
+  <section class="card"><span class="eyebrow">The job in plain words</span><p class="lede" style="margin:4px 0 8px">${esc(I.what || "")}</p>
+    ${(I.day || []).length ? `<b>A typical day</b><ul class="clean">${I.day.slice(0, 4).map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+    <div class="row" style="margin-top:8px"><span class="num">Job titles to search:</span>${pw.P.titles.map(t => `<span class="pill">${esc(t)}</span>`).join("")}</div></section>
+  <section class="card"><span class="eyebrow">Your path</span><h3>Work through it top to bottom</h3>
+    ${learnSteps}${toolsHTML}</section>
+  ${must.length ? `<section class="card"><span class="eyebrow">Employers ask for</span><h3>Must-have skills in job posts</h3>
+    ${must.map(([label, kws, how]) => { const found = rtext ? kws.some(k => hasTerm(rtext, k.toLowerCase())) : null;
+      return `<div class="reqrow"><span style="flex:1;min-width:160px">${esc(label)}</span><span class="pill ${found === true ? "ok" : found === false ? "bad" : ""}">${found === true ? "On your resume" : found === false ? "Not on resume yet" : "Must have"}</span></div>`; }).join("")}</section>` : ""}
+  <section class="card"><span class="eyebrow">Other roles in ${esc(fieldOf(rid))}</span><div class="row">${siblingsOf(rid).map(id => `<button class="pill" data-go="role-${id}">${esc(roleShort(id))}</button>`).join("") || '<span class="muted">No other roles in this field.</span>'}</div></section>`;
+}
+
+/* ---------- 18-week activity, shown on the Profile page ---------- */
+function activityCard(){
+  const WEEKS = 18, start = new Date(); start.setDate(start.getDate() - (WEEKS * 7 - 1));
+  let cal = `<div class="heatcal wide" style="--wk:${WEEKS}" aria-label="Activity over the last ${WEEKS} weeks">`;
+  for (let w = 0; w < WEEKS; w++) { cal += `<div class="wk">`; for (let d = 0; d < 7; d++) { const dt = new Date(start); dt.setDate(start.getDate() + w * 7 + d); const n = S.progress.log[dayStr(dt)] || 0; cal += `<div class="d ${n >= 6 ? "a3" : n >= 3 ? "a2" : n > 0 ? "a1" : ""}" title="${dayStr(dt)}: ${n}"></div>`; } cal += `</div>`; }
+  cal += `</div>`;
+  return `<div class="card actcard"><div class="row between"><span class="eyebrow">Activity, last 18 weeks</span><span class="num">🔥 ${streak()}-day streak · ${weekCount()} this week</span></div>${cal}
+    <span class="num">One square per day, today is the last square. Counts ticked subtopics, quiz answers, subjects opened, lab and project steps, applications and contacts added.</span></div>`;
+}
 
 /* ================= BOOT: final wiring, then first render ================= */
 if (ROLE.grcan) ROLE.grcan.need.automation = 1;
