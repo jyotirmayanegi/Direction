@@ -73,15 +73,23 @@ function viewHome(){
   <div class="row pw-quick">${[["learn", "Learn"], ["lab", "Cyber Lab"], ["projects", "Projects"], ["jobs", "Jobs"], ["resume", "Resume"]].map(([g, l]) => `<button class="btn ghost" data-go="${g}">${l}</button>`).join("")}</div>`;
 }
 
+/* ---------- brief study for a subject: subtopics with one-line descriptions ---------- */
+const firstSentence = x => { const t = String(x || "").trim(); const m = t.match(/^.*?[.!?](\s|$)/); return (m ? m[0] : t).trim(); };
+function topicDetails(t, extra){
+  const s = topicStats(t), subs = t.subs || [];
+  return `<details class="pwtopic" open><summary><span class="pw-sum"><b>${esc(t.title)}</b><span class="num">${esc(t.short || "")}</span></span><span class="num">${s.p >= PATH_DONE ? "Learned" : s.p + "%"}</span></summary>
+    <div class="pw-body">${bar(s.p, s.p >= PATH_DONE ? "ok" : "")}
+      <ol class="pw-subs">${subs.map(x => `<li><b>${esc(x.t)}</b> <span class="muted">${esc(firstSentence(x.b))}</span></li>`).join("")}</ol>
+      <div class="row"><button class="btn sm" data-go="${t.id}">Study this subject</button><a class="link" href="${ytFor(t)}" target="_blank" rel="noopener">Watch videos ▶</a>${extra ? `<span>${extra}</span>` : ""}</div>
+    </div></details>`;
+}
+
 /* ---------- Role page: one pathway per role ---------- */
 function viewRole(rid){
   const R = ROLE[rid], pw = R && pathwayFor(rid), I = ROLE_INFO[rid] || {};
   if (!pw) return `<div class="card"><p>Role not found.</p><button class="btn" data-go="learn">Back to Learn</button></div>`;
   const f = focusRole(), pct = pathwayPct(pw), nx = nextFor(pw), ops = typeof OPS !== "undefined" ? OPS : [];
-  const topicRow = id => { const t = TOPIC[id], s = topicStats(t);
-    return `<div class="pwtopic"><div style="min-width:0;flex:1"><button class="link strong" data-go="${id}">${esc(t.title)}</button>
-      <div class="num">${esc(t.short || "")}</div>${bar(s.p, s.p >= PATH_DONE ? "ok" : "")}</div>
-      <div class="row"><span class="num">${s.p >= PATH_DONE ? "Learned" : s.p + "%"}</span><a class="link" href="${ytFor(t)}" target="_blank" rel="noopener">Watch ▶</a></div></div>`; };
+  const topicRow = id => topicDetails(TOPIC[id], "");
   const learnSteps = pw.learn.map(st => { const sp = stepPct(st), done = sp >= PATH_DONE, cur = !done && nx && nx.step === st;
     return `<section class="pwstep ${done ? "done" : cur ? "cur" : ""}"><div class="pwhead"><span class="pwnum">${done ? "✓" : st.n}</span>
       <div style="min-width:0;flex:1"><b>${esc(st.name)}</b> <span class="num">${st.weeks ? "· " + esc(st.weeks) + " " : ""}· ${sp}%</span>
@@ -94,9 +102,7 @@ function viewRole(rid){
       ${pw.tools.map(id => { const t = TOPIC[id], s = topicStats(t), why = toolLocks(pw, id);
         if (why.length) return `<div class="pwtopic locked"><div style="flex:1"><b>🔒 ${esc(t.title)}</b><div class="num">Opens after: ${esc(why.join("; "))}</div></div></div>`;
         const lab = ops.filter(o => o.topic === id);
-        return `<div class="pwtopic"><div style="min-width:0;flex:1"><button class="link strong" data-go="${id}">${esc(t.title)}</button><div class="num">${esc(t.short || "")}</div>${bar(s.p, s.p >= PATH_DONE ? "ok" : "")}</div>
-          <div class="row"><span class="num">${s.p}% learned</span><a class="link" href="${ytFor(t)}" target="_blank" rel="noopener">Watch ▶</a>
-          ${s.p >= PATH_DONE ? lab.map(o => `<button class="link" data-labop="${o.id}" data-go="lab">Practise in Lab</button>`).join("") || `<span class="num">Practice in the Lab, Projects page</span>` : `<span class="num">Lab practice opens at ${PATH_DONE}%</span>`}</div></div>`; }).join("")}</section>` : "";
+        return topicDetails(t, s.p >= PATH_DONE ? lab.map(o => `<button class="link" data-labop="${o.id}" data-go="lab">Practise in Lab</button>`).join("") || `<span class="num">Lab practice opens at ${PATH_DONE}% learned</span>` : `<span class="num">Lab practice opens at ${PATH_DONE}% learned</span>`); }).join("")}</section>` : "";
   const must = (ROLE_REQ[rid] || []).filter(x => x[3]);
   const rtext = (S.resume.raw || "").toLowerCase();
   return `<div class="thead"><button class="link" data-go="learn">← All roles</button><span class="eyebrow">${esc(fieldOf(rid))}</span><h2>${esc(R.name)}</h2></div>
