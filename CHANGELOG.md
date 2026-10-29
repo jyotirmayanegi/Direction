@@ -10,3 +10,4 @@ Each update is named after the next element of the periodic table. To go back to
 | 4 | **Be** | Beryllium | 2026-10-29 | Projects: a page that fails to open now shows the error message instead of a blank page |  |
 | 5 | **B** | Boron | 2026-10-29 | Projects: records saved without empty lists no longer break the page; all projects checked |  |
 | 6 | **C** | Carbon | 2026-10-29 | Projects: records saved without empty lists no longer break the page; all projects checked |  |
+| 7 | **N** | Nitrogen | 2026-10-29 | Subjects: each subject page lists the original sources to read (official laws, standards, regulator guidance, books and vendor docs) |  |

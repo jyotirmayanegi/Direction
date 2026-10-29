@@ -323,6 +323,7 @@ function viewTopic(t){
     ${certs.length?`<div class="row"><span class="num">Counts toward:</span>${certs.map(c=>`<button class="pill acc" data-go="cert-${c.id}">${esc(c.name.replace(/\s*\(.*\)/,""))}</button>`).join("")}</div>`:""}
     <div class="card" style="gap:10px">${depthControl()}${legend()}</div>
     <nav class="parts" aria-label="Parts">${PARTS.map(([id,l],i)=>`<a href="#${t.id}" data-anchor="p-${id}">${i+1}. ${l}</a>`).join("")}</nav></div>
+  ${materialsCard(t)}
   ${practiceCard(t)}
   ${aiImpactCard(t)}
   ${part(++n,"obj","Objective",`<p>${esc(t.obj)}</p>`)}
