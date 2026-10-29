@@ -11,3 +11,4 @@ Each update is named after the next element of the periodic table. To go back to
 | 5 | **B** | Boron | 2026-10-29 | Projects: records saved without empty lists no longer break the page; all projects checked |  |
 | 6 | **C** | Carbon | 2026-10-29 | Projects: records saved without empty lists no longer break the page; all projects checked |  |
 | 7 | **N** | Nitrogen | 2026-10-29 | Subjects: each subject page lists the original sources to read (official laws, standards, regulator guidance, books and vendor docs) |  |
+| 8 | **O** | Oxygen | 2026-10-29 | Study sources: every link is now free to read (no paid books or standards) |  |
