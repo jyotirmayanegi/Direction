@@ -13,3 +13,4 @@ Each update is named after the next element of the periodic table. To go back to
 | 7 | **N** | Nitrogen | 2026-10-29 | Subjects: each subject page lists the original sources to read (official laws, standards, regulator guidance, books and vendor docs) |  |
 | 8 | **O** | Oxygen | 2026-10-29 | Study sources: every link is now free to read (no paid books or standards) |  |
 | 9 | **F** | Fluorine | 2026-10-29 | Study sources: each subject lists a legal free whole-subject book where one is verified; subjects without one say so |  |
+| 10 | **Ne** | Neon | 2026-10-29 | ISO 27001 Annex A: all 93 controls added as subtopics under the ISO topic, grouped by the four themes | 27 |
