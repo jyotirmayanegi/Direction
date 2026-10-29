@@ -10395,12 +10395,14 @@ function activityCard(){
    Read the summary or plain-language part first, then the original text. Links go to the publisher's own site. */
 const MAT = {
   grc: [
+    ["Whole-subject free book", "Managing Risk and Information Security: Protect to Enable (free, open access)", "OAPEN open access library", "https://library.oapen.org/handle/20.500.12657/112455", "Search OAPEN for this title if the link opens a different book. Read it alongside the NIST CSF."],
     ["Reference", "NIST Cybersecurity Framework 2.0 (free PDF)", "NIST", "https://www.nist.gov/cyberframework", "Read the Govern function first. It is the plainest picture of GRC."],
     ["Regulator guidance", "COSO Enterprise Risk Management (free executive summary)", "COSO", "https://www.coso.org", "Read the summary and the five components."],
     ["Free book", "The Three Lines Model (IIA, 2020, free PDF)", "The Institute of Internal Auditors", "https://www.theiia.org", "Two pages. Who owns risk, who oversees it, who checks it."],
     ["Reference", "CIS Critical Security Controls (free)", "Center for Internet Security", "https://www.cisecurity.org/controls", "Read the list of controls; you only need the names and what each covers."]
   ],
   privacy: [
+    ["Whole-subject free book", "The GDPR made simple(r) for SMEs (free, open access)", "OAPEN open access library", "https://library.oapen.org/handle/20.500.12657/46614", "Read the principles chapters first, then check each one against the GDPR text."],
     ["Official text", "GDPR, Articles 4, 5 and 6 (free)", "European Union", "https://eur-lex.europa.eu/eli/reg/2016/679/oj", "Read Article 5 first. It is short and lists the six principles."],
     ["Regulator guidance", "UK ICO: Guide to UK GDPR (free)", "Information Commissioner's Office", "https://ico.org.uk", "Plain English. Read the principles and lawful-basis pages."],
     ["Regulator guidance", "EDPB guidelines (free)", "European Data Protection Board", "https://www.edpb.europa.eu", "Read the guidelines on consent and on the right of access."],
@@ -10412,6 +10414,7 @@ const MAT = {
     ["Reference", "Khan Academy: computing and the internet (free lessons)", "Khan Academy", "https://www.khanacademy.org", "Free short lessons on computers and the internet."]
   ],
   "c-network": [
+    ["Whole-subject free book", "An Introduction to Computer Networks (free open textbook)", "Peter Dordal, Loyola University Chicago", "https://intronetworks.cs.luc.edu/", "Read the chapters in order; it covers the whole subject for free."],
     ["Reference", "Cloudflare Learning Center (free explainers)", "Cloudflare", "https://www.cloudflare.com/learning", "Short explainers on IP, DNS, firewalls and VPNs."],
     ["Reference", "NIST SP 800-41 Firewalls and firewall policy (free PDF)", "NIST", "https://csrc.nist.gov", "Read the overview. You need the idea of a firewall rule only."],
     ["Reference", "MDN: How the web works (free)", "Mozilla", "https://developer.mozilla.org", "Read the networking basics on how requests travel."]
@@ -10428,11 +10431,13 @@ const MAT = {
     ["Official text", "Information Technology Act, 2000, section 43A and SPDI Rules (free)", "MeitY", "https://www.meity.gov.in", "Read this to see what the DPDP Act replaced."]
   ],
   gdpr: [
+    ["Whole-subject free book", "The GDPR made simple(r) for SMEs (free, open access)", "OAPEN open access library", "https://library.oapen.org/handle/20.500.12657/46614", "Read it as the whole-subject book, then the GDPR text for each article it mentions."],
     ["Official text", "Regulation (EU) 2016/679 (GDPR, free)", "European Union", "https://eur-lex.europa.eu/eli/reg/2016/679/oj", "Read Article 4 (definitions), Article 5 (principles) and Article 6 (lawful bases). Then Articles 15 to 22 (rights)."],
     ["Regulator guidance", "EDPB guidelines (free)", "European Data Protection Board", "https://www.edpb.europa.eu", "Read the guidelines on consent and on the right of access."],
     ["Regulator guidance", "UK ICO: Guide to UK GDPR (free)", "Information Commissioner's Office", "https://ico.org.uk", "Plain-English explanations of each principle."]
   ],
   ccpa: [
+    ["Whole-subject free book", "Open Internet Law Casebook: Privacy (free, Open Casebook)", "Open Casebook project", "https://opencasebook.org/casebooks/409-an-open-internet-law-casebook/sections/5-oil-casebook-topic-v-privacy/", "Read the cases for how US privacy law works in practice."],
     ["Official text", "California Consumer Privacy Act, as amended by CPRA (free)", "State of California", "https://oag.ca.gov/privacy/ccpa", "Read the consumer rights and business obligations sections."],
     ["Regulator guidance", "California Privacy Protection Agency (free)", "CPPA", "https://cppa.ca.gov", "Official guidance and regulations."],
     ["Reference", "IAPP US state privacy tracker (free summary)", "IAPP", "https://iapp.org", "Search 'US state privacy legislation tracker' to compare states."]
@@ -10453,6 +10458,7 @@ const MAT = {
     ["Free book", "Security Engineering, 3rd edition (free PDF)", "Ross Anderson", "https://www.cl.cam.ac.uk/~rja14/book.html", "Read chapter 1 for the basic attacker and defender model."]
   ],
   "c-crypto": [
+    ["Whole-subject free book", "A Graduate Course in Applied Cryptography (free from the authors)", "Dan Boneh and Victor Shoup", "https://crypto.stanford.edu/~dabo/cryptobook", "Read chapters 1 to 4 for the core ideas, then the parts your projects need."],
     ["Reference", "NIST SP 800-175B Cryptographic algorithms guideline (free)", "NIST", "https://csrc.nist.gov", "Read the summary to see which algorithms are approved."],
     ["Reference", "Cloudflare: encryption explainers (free)", "Cloudflare", "https://www.cloudflare.com/learning", "Short plain-language explanations of encryption at rest and in transit."],
     ["Free book", "Security Engineering, chapter on cryptography (free PDF)", "Ross Anderson", "https://www.cl.cam.ac.uk/~rja14/book.html", "Read the cryptography overview for the ideas."]
@@ -10473,6 +10479,7 @@ const MAT = {
     ["Reference", "AICPA Trust Services Criteria overview (free summary)", "AICPA", "https://www.aicpa-cima.com", "Read the five categories and what an auditor checks."]
   ],
   risk: [
+    ["Whole-subject free book", "Managing Risk and Information Security: Protect to Enable (free, open access)", "OAPEN open access library", "https://library.oapen.org/handle/20.500.12657/112455", "Search OAPEN for this title if the link opens a different book. Read the risk chapters first."],
     ["Reference", "NIST SP 800-30 Guide for conducting risk assessments (free)", "NIST", "https://csrc.nist.gov", "Read the overview and the risk matrix example."],
     ["Reference", "FAIR Institute free resources", "FAIR Institute", "https://www.fairinstitute.org", "Free guides on measuring cyber risk in money terms."],
     ["Reference", "NIST Cybersecurity Framework 2.0 (free)", "NIST", "https://www.nist.gov/cyberframework", "Read the Identify function for the risk-assessment steps."]
@@ -10588,6 +10595,7 @@ const MAT = {
     ["Regulator guidance", "FinCEN AML program guidance (free)", "US FinCEN", "https://www.fincen.gov", "Read the overview of AML programs."]
   ],
   clm: [
+    ["Whole-subject free book", "Business Law I Essentials (free, OpenStax)", "OpenStax, Rice University", "https://openstax.org/books/business-law-i-essentials-2e/pages/preface", "Read the contract law chapters; they cover offer, acceptance, consideration and breach."],
     ["Official text", "Indian Contract Act, 1872 (free, India Code)", "Government of India", "https://www.indiacode.nic.in", "Search the Act; read the sections on offer and acceptance."],
     ["Reference", "Association of Corporate Counsel: free articles", "ACC", "https://www.acc.com", "Free articles on legal operations and contracts."],
     ["Reference", "Khan Academy: business basics (free)", "Khan Academy", "https://www.khanacademy.org", "Free lessons on how contracts and businesses work."]
@@ -10603,6 +10611,7 @@ const MAT = {
     ["Official text", "EU Digital Services Act (free, EUR-Lex)", "European Union", "https://eur-lex.europa.eu", "Read the summary of platform duties."]
   ],
   "ai-found": [
+    ["Whole-subject free book", "Ethics of Artificial Intelligence: Case Studies and Options for Addressing Ethical Challenges (free, open access)", "OAPEN open access library", "https://library.oapen.org/handle/20.500.12657/59315", "Read the case studies to see how AI risks appear in real life."],
     ["Free book", "Elements of AI (free course, University of Helsinki)", "University of Helsinki and MinnaLearn", "https://www.elementsofai.com", "Free. Start with chapters 1 and 2 on what AI is."],
     ["Reference", "Google Machine Learning Crash Course (free)", "Google", "https://developers.google.com/machine-learning/crash-course", "Read the framing and data units."],
     ["Reference", "NIST AI RMF 1.0 glossary (free)", "NIST", "https://www.nist.gov/itl/ai-risk-management-framework", "Use it to look up AI terms."]
@@ -10618,6 +10627,7 @@ const MAT = {
     ["Reference", "India AI governance guidelines (free, MeitY)", "MeitY", "https://www.meity.gov.in", "Search 'AI governance guidelines' for the India framework."]
   ],
   "ai-risk": [
+    ["Whole-subject free book", "Ethics of Artificial Intelligence: Case Studies and Options for Addressing Ethical Challenges (free, open access)", "OAPEN open access library", "https://library.oapen.org/handle/20.500.12657/59315", "Use the case studies to practise identifying and assessing risks."],
     ["Reference", "NIST AI RMF Playbook (free)", "NIST", "https://www.nist.gov/itl/ai-risk-management-framework", "Read the suggested actions for each function."],
     ["Official text", "EU AI Act Article 27, fundamental rights impact assessment (free)", "European Union", "https://eur-lex.europa.eu/eli/reg/2024/1689/oj", "Read Article 27 for what an impact assessment must cover."],
     ["Reference", "AI Incident Database (free)", "Responsible AI Collaborative", "https://incidentdatabase.ai", "Read real AI failures to see why assessments matter."]
@@ -10637,10 +10647,12 @@ const MAT = {
 function materialsCard(t){
   const list = MAT[t.id] || [];
   if (!list.length) return "";
+  const hasBook = list.some(x => x[0] === "Whole-subject free book");
   return `<section class="card matcard"><span class="eyebrow">Read the original sources, free</span><h3>Where to read ${esc(t.title)}</h3>
+    ${hasBook ? "" : '<p class="note">No free whole-subject book has been verified for this subject yet. Read the official sources below in order, and check for a free book again later.</p>'}
     <p class="num">Read the official text or the regulator's explanation first. Use the free guide or vendor page to understand it in plain words. Every link here is free to read.</p>
     <div class="matlist">${list.map(([type, title, by, url, how]) => `<div class="matrow">
-      <span class="pill ${type === "Official text" ? "acc" : type === "Regulator guidance" ? "ok" : ""}">${esc(type)}</span>
+      <span class="pill ${type === "Whole-subject free book" ? "hot" : type === "Official text" ? "acc" : type === "Regulator guidance" ? "ok" : ""}">${esc(type)}</span>
       <div style="min-width:0"><b>${esc(title)}</b><div class="num">${esc(by)}</div><p class="muted" style="font-size:.9rem;margin:2px 0 0">${esc(how)}</p></div>
       ${url ? `<a class="btn sm ghost" href="${esc(url)}" target="_blank" rel="noopener">Open ↗</a>` : ""}</div>`).join("")}</div></section>`;
 }
