@@ -8558,7 +8558,9 @@ function renderHeader(){
 function render(){
   renderHeader();
   const gate = gateView(current);
-  const v = gate != null ? gate : TOPIC[current] ? viewTopic(TOPIC[current]) : /^cert-/.test(current) ? viewCert(CERT[current.slice(5)]) : /^proj-/.test(current) ? viewProject(PROJ[current.slice(5)]) : (/^lab-/.test(current) && MISSION[current.slice(4)]) ? viewMission(MISSION[current.slice(4)]) : /^role-/.test(current) ? viewRole(current.slice(5)) : (VIEWS[current]||viewHome)();
+  let v;
+  try { v = gate != null ? gate : TOPIC[current] ? viewTopic(TOPIC[current]) : /^cert-/.test(current) ? viewCert(CERT[current.slice(5)]) : /^proj-/.test(current) ? viewProject(PROJ[current.slice(5)]) : (/^lab-/.test(current) && MISSION[current.slice(4)]) ? viewMission(MISSION[current.slice(4)]) : /^role-/.test(current) ? viewRole(current.slice(5)) : (VIEWS[current]||viewHome)(); }
+  catch(e) { console.error('Page failed to render:', current, e); v = `<div class="card"><span class="eyebrow">Could not open this page</span><h3>${esc(String(e && e.message || e))}</h3><p class="muted">Page: ${esc(String(current))}. Send this message to Claude so it can be fixed.</p><div class="row"><button class="btn" data-go="learn">Back to Learn</button><button class="btn ghost" data-go="projects">Projects</button></div></div>`; }
   document.getElementById("main").innerHTML = `<div class="view">${ACCESS.owner && ACCESS.previewFree ? `<div class="previewbar"><span>👁 Previewing as a free visitor</span><button class="btn sm" data-adexit="1">Exit preview</button></div>` : ""}${v}</div>`;
   if (gate == null && /^lab-/.test(current) && MISSION[current.slice(4)]) labAfterRender();
   if (gate == null && current === "lab") losMount();
