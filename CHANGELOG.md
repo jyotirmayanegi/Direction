@@ -8,3 +8,4 @@ Each update is named after the next element of the periodic table. To go back to
 | 2 | **He** | Helium | 2026-10-27 | Role pathways: each role has its own ordered path; tools unlock after the basics; clean home; activity tracker moved to Profile |  |
 | 3 | **Li** | Lithium | 2026-10-28 | Role pages: subtopics with one-line descriptions shown under each subject |  |
 | 4 | **Be** | Beryllium | 2026-10-29 | Projects: a page that fails to open now shows the error message instead of a blank page |  |
+| 5 | **B** | Boron | 2026-10-29 | Projects: records saved without empty lists no longer break the page; all projects checked |  |

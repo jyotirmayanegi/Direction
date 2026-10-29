@@ -6659,8 +6659,19 @@ const LVL_CLS = {1:"lvB",2:"lvI",3:"lvA"};
 const lvBadge = l => `<span class="ib ${LVL_CLS[l]}">${INTENSITY_NAME[l]}</span>`;
 
 const PDEF = () => ({steps:{}, attempts:0, passed:false, history:[], draft:"", chat:[]});
-function projGet(id){ return (S.progress.projects || {})[id] || PDEF(); }
-function projState(id){ const all = (S.progress.projects ||= {}); const st = (all[id] ||= PDEF()); st.chat ||= []; return st; }
+function projGet(id){ const st = (S.progress.projects || {})[id]; return st ? normProj(Object.assign(PDEF(), st)) : PDEF(); }
+/* The database drops empty lists when it saves, so a project record can come back without history or chat.
+   Every read and write fills those fields in, for every project. */
+function normProj(st){
+  st.steps = st.steps && typeof st.steps === "object" ? st.steps : {};
+  st.history = Array.isArray(st.history) ? st.history : [];
+  st.chat = Array.isArray(st.chat) ? st.chat : [];
+  st.draft = typeof st.draft === "string" ? st.draft : "";
+  st.attempts = Number(st.attempts) || 0;
+  st.passed = !!st.passed;
+  return st;
+}
+function projState(id){ const all = (S.progress.projects ||= {}); const st = (all[id] ||= PDEF()); return normProj(st); }
 function projFails(st){ return st.history.filter(h => !h.pass && h.mode !== "self-skip").length; }
 function coachMode(st){ return st.passed || projFails(st) >= KEY_AT ? "cheat" : projFails(st) >= HINT_AT ? "hints" : "guide"; }
 function keyUnlocked(st){ return coachMode(st) === "cheat"; }
@@ -6806,7 +6817,7 @@ MARKING LIST: ${p.rubric.map(([r,c],i)=>`${i}. ${r}${c?" (required)":""}`).join(
 ${p.data?"DATA: "+JSON.stringify(p.data).slice(0,3000):""}
 ${mi.m!=="guide"?"HINTS: "+(p.hints||[]).join(" | "):""}
 ${mi.m==="cheat"?"MODEL ANSWER APPROACH: "+p.key.approach+"\nMODEL ANSWER: "+p.key.sample+"\nTIPS: "+p.key.tips.join(" | "):""}
-${last?`LATEST REVIEW (${last.pass?"passed":"not passed"}, ${last.score}%): unmet items: ${last.items.map((x,i)=>x.met?null:i).filter(x=>x!==null).join(", ")||"none"}. Main fix: ${last.fix||last.feedback||""}`:"No review submitted yet."}
+${last?`LATEST REVIEW (${last.pass?"passed":"not passed"}, ${last.score}%): unmet items: ${(last.items||[]).map((x,i)=>x.met?null:i).filter(x=>x!==null).join(", ")||"none"}. Main fix: ${last.fix||last.feedback||""}`:"No review submitted yet."}
 LEARNER'S CURRENT DRAFT (excerpt): ${(st.draft||"(empty)").slice(0,4000)}
 
 CONVERSATION SO FAR:
@@ -6825,7 +6836,7 @@ function renderReview(p, h){
   const t = TOPIC[p.topic];
   return `<div class="row between"><div class="row">${ring(h.score, h.pass?"ok":"")}<div><b>${h.pass?"Passed":"Not passed yet"}</b><div class="num">${esc(h.date)}${h.mode==="self"?" · self-check":" · reviewed by Claude"}</div></div></div></div>
     ${h.strengths?`<div class="info"><b>What you did well:</b> ${esc(h.strengths)}</div>`:""}
-    <div style="display:grid;gap:8px">${h.items.map((it,i)=>`<div class="flag"><b class="sev ${it.met?"ok":(p.rubric[i]&&p.rubric[i][1]?"hi":"md")}">${it.met?"Met":"Missing"}</b><span>${esc(p.rubric[i]?p.rubric[i][0]:"")}${it.note?`<br><span class="muted">${esc(it.note)}</span>`:""}${it.why?`<br><span class="num">Why it matters: ${esc(it.why)}</span>`:""}</span></div>`).join("")}</div>
+    <div style="display:grid;gap:8px">${(h.items||[]).map((it,i)=>`<div class="flag"><b class="sev ${it.met?"ok":(p.rubric[i]&&p.rubric[i][1]?"hi":"md")}">${it.met?"Met":"Missing"}</b><span>${esc(p.rubric[i]?p.rubric[i][0]:"")}${it.note?`<br><span class="muted">${esc(it.note)}</span>`:""}${it.why?`<br><span class="num">Why it matters: ${esc(it.why)}</span>`:""}</span></div>`).join("")}</div>
     ${h.approach?`<div class="inset"><b>Your approach, assessed</b><p style="font-size:.92rem">${esc(h.approach)}</p></div>`:""}
     ${h.metrics&&h.metrics.length?`<div class="inset"><b>How professionals judge this work</b><ul class="clean">${h.metrics.map(m=>`<li>${esc(m)}</li>`).join("")}</ul></div>`:""}
     ${(h.fix||h.feedback)?`<div class="note"><b>Most important fix:</b> ${esc(h.fix||h.feedback)}</div>`:""}
