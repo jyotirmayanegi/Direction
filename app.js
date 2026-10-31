@@ -41,13 +41,14 @@ ROLES.push(...ROLES_EXTRA);
 const ROLE = Object.fromEntries(ROLES.map(r => [r.id, r]));
 
 /* ================= STATE & STORAGE ================= */
-const DOCS = ["progress","profile","network","videos","resume"];
+const DOCS = ["progress","profile","network","videos","resume","jds"];
 const S = {
   progress:{done:{}, quiz:{}, log:{}, doneAt:{}, reviewed:{}},
   profile:{name:"", headline:"", location:"", email:"", phone:"", linkedin:"", github:"", education:"", experience:"", certs:"", targets:[], claims:[], color:"#0A6CDF", avatarId:"", extra:[], company:"bank", certsHave:[], certsPlan:[]},
   network:{contacts:[], apps:[]},
   videos:{map:{}},
-  resume:{raw:"", jd:"", role:"privacy", model:null, last:null}
+  resume:{raw:"", jd:"", role:"privacy", model:null, last:null},
+  jds:{items:[]}
 };
 const LS = k => "docket3-" + k;
 for (const k of DOCS) { try { const v = JSON.parse(localStorage.getItem(LS(k)) || "null"); if (v) S[k] = Object.assign(S[k], v); } catch(e) {} }
@@ -242,7 +243,7 @@ function illustrate(t){
 const MENU = [
  ["Overview",[["home","Dashboard","#0A6CDF","◎"],["insights","Insights & coach","#C2410C","✚"]]],
  ["Study",[["learn","Learn by role","#1E8A4C","▤"],["lab","Cyber Lab (LabOS)","#334155","$_"],["ideas","Project ideas","#A2620A","◇"],["projects","Projects","#7A4BC4","⚒"],["automation","Automation tools","#0F766E","⟳"],["certs","Certifications","#0E7490","✦"],["videos","Video bookmarks","#C2410C","▶"]]],
- ["Career",[["roles","Role pages & readiness","#0E7490","◆"],["matrix","Roles × subjects","#155E75","▦"],["applications","Applications & Gmail","#B42318","✉"],["jobs","Jobs to target","#A2620A","▣"],["resume","Resume builder","#0A6CDF","¶"],["linkedin","LinkedIn","#2563EB","in"]]],
+ ["Career",[["roles","Role pages & readiness","#0E7490","◆"],["jd","Job descriptions","#7C3AED","≡"],["matrix","Roles × subjects","#155E75","▦"],["applications","Applications & Gmail","#B42318","✉"],["jobs","Jobs to target","#A2620A","▣"],["resume","Resume builder","#0A6CDF","¶"],["linkedin","LinkedIn","#2563EB","in"]]],
  ["People & news",[["network","Network","#1E8A4C","☍"],["news","News & regulations","#9D174D","§"],["updates","Updates","#C2410C","↻"]]],
  ["Help",[["support","Help & support (AI)","#2563EB","?"],["mentors","Student support","#15803D","☏"]]],
  ["You",[["pricing","Plans & pricing","#B45309","₹"],["admin","Admin: payments","#7C2D12","⚙"],["profile","Profile & avatar","#4F5D6E","●"]]]
@@ -417,6 +418,7 @@ function viewRoles(){
   const trend = (UPDATES||[]).filter(u=>u.kind==="skill"||u.kind==="tool").slice(0,6);
   return `<div><span class="eyebrow">Readiness tracker</span><h2>Roles you can apply for</h2></div>
   <p class="lede">Each role needs a weighted set of skills. Your level comes from sub-topics learned, quizzes passed, and skills you've said you have from work (Profile).</p>
+  <div class="row"><button class="btn ghost" data-go="jd">Check a job description</button><span class="num">See what a posting asks for and what to learn next.</span></div>
   <div class="card"><div class="row">${readyPill(80)}<span class="muted">70%+</span>${readyPill(50)}<span class="muted">40–69%</span>${readyPill(10)}<span class="muted">under 40%</span></div></div>
   ${ranked.map(({r,p})=>{ const g=gaps(r).slice(0,3), rc=(ROLE_CERTS[r.id]||[]).filter(x=>x[1]===1).map(x=>CERT[x[0]]); return `<article class="card">
     <div class="row between"><div style="min-width:0"><span class="eyebrow">${esc(r.fit)}${targets.includes(r.id)?" · your target":""}</span><h3>${pathOf(r.id)?`<button class="link strong" data-go="role-${r.id}">${esc(r.name)}</button>`:esc(r.name)}</h3></div><div class="row"><span class="big">${p}%</span>${readyPill(p)}${pathOf(r.id)?`<button class="btn sm" data-go="role-${r.id}">Role page</button>`:""}</div></div>
@@ -739,7 +741,7 @@ function viewLinkedIn(){
 }
 
 /* ================= ROUTER ================= */
-const VIEWS = {home:viewHome, insights:viewInsights, lab:viewLabOS, "lab-map":viewLab, projects:viewProjects, learn:viewLearn2, path:viewPath, matrix:viewMatrix, roles:viewRoles, certs:viewCerts, network:viewNetwork, updates:viewUpdates, news:viewNews, applications:viewApplications, profile:viewProfile, videos:viewVideos, resume:viewResume2, linkedin:viewLinkedIn, jobs:viewJobs, support:viewSupport, mentors:viewMentors, ideas:viewIdeas, automation:viewAutomation, pricing:viewPricing, admin:viewAdmin};
+const VIEWS = {home:viewHome, insights:viewInsights, lab:viewLabOS, "lab-map":viewLab, projects:viewProjects, learn:viewLearn2, path:viewPath, matrix:viewMatrix, roles:viewRoles, jd:viewJD, certs:viewCerts, network:viewNetwork, updates:viewUpdates, news:viewNews, applications:viewApplications, profile:viewProfile, videos:viewVideos, resume:viewResume2, linkedin:viewLinkedIn, jobs:viewJobs, support:viewSupport, mentors:viewMentors, ideas:viewIdeas, automation:viewAutomation, pricing:viewPricing, admin:viewAdmin};
 function resolve(k){ if (VIEWS[k] || TOPIC[k]) return k; if (/^cert-/.test(k) && CERT[k.slice(5)]) return k; if (/^proj-/.test(k) && PROJ[k.slice(5)]) return k; if (/^lab-/.test(k) && MISSION[k.slice(4)]) return k; if (/^role-/.test(k) && ROLE[k.slice(5)] && pathOf(k.slice(5))) return k; return null; }
 try { const h = resolve(location.hash.replace("#","")); if (h) current = h; } catch(e) {}
 function whereLabel(){ if (current === "lab-map") return TITLES["lab-map"]; if (TOPIC[current]) return "Learning path · " + TOPIC[current].title; if (/^cert-/.test(current)) return "Certifications · " + CERT[current.slice(5)].name; if (/^proj-/.test(current)) return "Projects · " + PROJ[current.slice(5)].title; if (/^lab-/.test(current) && MISSION[current.slice(4)]) return "Cyber Lab · " + MISSION[current.slice(4)].title; if (/^role-/.test(current)) return "Role · " + roleShort(current.slice(5)); return TITLES[current] || "Dashboard"; }

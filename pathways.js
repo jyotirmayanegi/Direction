@@ -109,7 +109,8 @@ function viewRole(rid){
   <section class="card pw-next"><div class="row between" style="flex-wrap:nowrap;align-items:center"><div style="min-width:0"><span class="eyebrow">${esc(R.fit)}</span>
       <p class="muted" style="margin:4px 0 0">${esc(pw.P.why)}</p></div>${ring(pct, "acc")}</div>
     <div class="row">${rid === f ? '<span class="pill ok">You are studying for this role</span>' : `<button class="btn" data-focus="${rid}">Study for this role</button>`}
-      ${nx ? `<button class="btn ghost" data-go="${nx.topic.id}">Continue: ${esc(nx.topic.title)}</button>` : ""}</div></section>
+      ${nx ? `<button class="btn ghost" data-go="${nx.topic.id}">Continue: ${esc(nx.topic.title)}</button>` : ""}
+      <button class="btn ghost" data-go="jd" data-jdrole="${rid}">Check a job description</button></div></section>
   <section class="card"><span class="eyebrow">The job in plain words</span><p class="lede" style="margin:4px 0 8px">${esc(I.what || "")}</p>
     ${(I.day || []).length ? `<b>A typical day</b><ul class="clean">${I.day.slice(0, 4).map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
     <div class="row" style="margin-top:8px"><span class="num">Job titles to search:</span>${pw.P.titles.map(t => `<span class="pill">${esc(t)}</span>`).join("")}</div></section>

@@ -14,3 +14,4 @@ Each update is named after the next element of the periodic table. To go back to
 | 8 | **O** | Oxygen | 2026-10-29 | Study sources: every link is now free to read (no paid books or standards) |  |
 | 9 | **F** | Fluorine | 2026-10-29 | Study sources: each subject lists a legal free whole-subject book where one is verified; subjects without one say so |  |
 | 10 | **Ne** | Neon | 2026-10-29 | ISO 27001 Annex A: all 93 controls added as subtopics under the ISO topic, grouped by the four themes | 27 |
+| 11 | **Na** | Sodium | 2026-10-31 | Job descriptions page: paste or upload a JD, choose its role, save it to the account, and see the skills and tools to learn for each role. Linked from role pages and Roles & readiness | 28 |
