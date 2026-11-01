@@ -141,6 +141,7 @@ function viewResume2(){
     ${RS2.err?`<div class="note">${esc(RS2.err)}</div>`:""}
     <details ${!meta&&hasText?"open":""}><summary class="link" style="cursor:pointer">Or paste the text instead</summary><textarea id="rsRaw" style="min-height:180px;margin-top:8px" placeholder="Paste the full text of your resume">${esc(r.raw)}</textarea>
       <div class="row"><button class="btn sm" id="rsRun">Check pasted text</button><button class="btn ghost sm" id="rsSample">Load my current draft</button></div></details></div>
+  ${linCard()}
   <div class="card"><span class="eyebrow">Step 2</span><h3>Which role are you applying for?</h3>
     <div class="rolechips">${[...new Set([rid, focusRole(), ...(S.profile.targets||[])].filter(x=>ROLE[x]))].map(id=>`<button class="rchip ${id===rid?"on":""}" data-rsrole="${id}">${esc(roleShort(id))}</button>`).join("")}
       <select id="rsRole" aria-label="All roles">${ROLES.map(x=>`<option value="${x.id}" ${x.id===rid?"selected":""}>${esc(x.name)}</option>`).join("")}</select></div>
