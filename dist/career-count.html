@@ -10943,7 +10943,8 @@ function viewCover(){
   ${text ? `<div class="card"><span class="eyebrow">Step 2</span><div class="row between"><h3>Your cover letter</h3><span class="num">${words} words</span></div>
     <textarea id="clOut" style="min-height:380px;font-family:inherit;line-height:1.55">${esc(text)}</textarea>
     ${warn.map(w => `<div class="note">${esc(w)}</div>`).join("")}
-    <div class="row"><button class="btn" id="clCopy">Copy</button><button class="btn ghost" id="clTxt">Download TXT</button></div>
+    <div class="row"><button class="btn" id="clPdf">Download PDF</button><button class="btn ghost" id="clCopy">Copy</button><button class="btn ghost" id="clTxt">Download TXT</button></div>
+    ${CLMSG ? `<div class="info">${esc(CLMSG)}</div>` : ""}
     <p class="muted" style="font-size:.9rem">Check every line before you send it. Only facts from your resume are used.</p></div>
     ${A ? `<div class="card"><span class="eyebrow">What the letter draws on</span>
       <h3>Matched to the job</h3>
@@ -10953,9 +10954,42 @@ function viewCover(){
   <div class="card"><span class="eyebrow">Tip</span><p class="muted" style="font-size:.9rem">Keep it to one page, about 250 to 350 words. Use the company's own name, and do not repeat your whole resume.</p></div>`;
 }
 
+/* PDF of the letter, built the same way as the resume PDF (jsPDF, one column, one font). */
+var CLMSG = "";
+async function buildCoverPdf(text){
+  await loadScript(LIBS.jspdf);
+  const {jsPDF} = window.jspdf, pdf = new jsPDF({unit: "pt", format: "a4"}), W = 595, H = 842, margin = 60, maxW = W - margin * 2, lh = 15;
+  const clean = s => String(s || "").replace(/₹/g, "Rs. ").replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/[–—]/g, "-").replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF•]/g, "");
+  let y = margin;
+  pdf.setFont("helvetica", "normal"); pdf.setFontSize(11);
+  String(text).replace(/\r/g, "").split("\n").forEach(line => {
+    if (!line.trim()) { y += lh * 0.6; return; }
+    pdf.splitTextToSize(clean(line), maxW).forEach(w => { if (y > H - margin) { pdf.addPage(); y = margin; } pdf.text(w, margin, y); y += lh; });
+  });
+  pdf.setProperties({title: "Cover letter"});
+  return pdf.output("blob");
+}
+async function clPdf(){
+  const t = (document.getElementById("clOut") || {}).value || "";
+  if (!t.trim()) { CLMSG = "Write the letter first."; render(); return; }
+  CLMSG = "Preparing your PDF…"; render();
+  try {
+    const data = await buildCoverPdf(t);
+    const co = ((S.resume.cover || {}).company || "").trim().replace(/[^\w]+/g, "_").replace(/^_|_$/g, "");
+    const who = ((S.resume.model && S.resume.model.name) || S.profile.name || "").trim().replace(/\s+/g, "_").replace(/[^\w]/g, "") || "Cover";
+    const filename = "Cover_Letter_" + who + (co ? "_" + co : "") + ".pdf";
+    const dl = await claude.use("downloads").catch(() => null);
+    if (!dl) { CLMSG = "Downloads aren't available in this view. Use Copy, paste into Word and save as PDF."; render(); return; }
+    const res = await dl.save({filename, data});
+    CLMSG = res && res.status === "saved" ? `Saved ${filename}. Name it the same way when you apply.` : "File handed over.";
+  } catch (e) { CLMSG = e && e.code === "declined" ? "Download cancelled." : e && e.code === "rate_limited" ? "A download prompt is already open." : "Couldn't create the PDF: " + (e && e.message ? e.message : "unknown error") + "."; }
+  render();
+}
+
 document.addEventListener("click", e => {
-  const el = e.target.closest && e.target.closest("#clBuild,#clCopy,#clTxt"); if (!el) return;
-  if (el.id === "clBuild") { S.resume.cover = Object.assign({}, S.resume.cover || {}, {text: clWrite()}); save("resume"); render(); return; }
+  const el = e.target.closest && e.target.closest("#clBuild,#clCopy,#clTxt,#clPdf"); if (!el) return;
+  if (el.id === "clPdf") { clPdf(); return; }
+  if (el.id === "clBuild") { S.resume.cover = Object.assign({}, S.resume.cover || {}, {text: clWrite()}); CLMSG = ""; save("resume"); render(); return; }
   if (el.id === "clCopy") { const t = (document.getElementById("clOut") || {}).value || ""; copyText(el, t); return; }
   const t = (document.getElementById("clOut") || {}).value || "";
   const url = URL.createObjectURL(new Blob([t], {type: "text/plain"}));

@@ -17,3 +17,4 @@ Each update is named after the next element of the periodic table. To go back to
 | 11 | **Na** | Sodium | 2026-10-31 | Job descriptions page: paste or upload a JD, choose its role, save it to the account, and see the skills and tools to learn for each role. Linked from role pages and Roles & readiness | 28 |
 | 12 | **Mg** | Magnesium | 2026-11-01 | Resume builder: LinkedIn import. Upload LinkedIn's data ZIP (or its CSV files), tick the profile, positions, education, skills, certifications, projects and honours to add, and skip anything already in the resume | 29 |
 | 13 | **Al** | Aluminium | 2026-11-01 | Cover letter builder: writes a cover letter instantly from the resume and the job description, fully editable, with copy and TXT download. Added to the Career menu and linked from the resume builder | 30 |
+| 14 | **Si** | Silicon | 2026-11-01 | Cover letter builder: Download PDF option (same PDF method as the resume), alongside Copy and TXT | 31 |
